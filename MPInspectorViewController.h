@@ -14,8 +14,7 @@
 @class MPManuscriptsPackageController;
 
 /** A view controller for the Manuscripts.app main window's inspector. */
-@interface MPInspectorViewController : PARViewController
-<NSOutlineViewDataSource, NSOutlineViewDelegate, MPObjectSelectionObserver>
+@interface MPInspectorViewController : PARViewController <NSOutlineViewDataSource, NSOutlineViewDelegate>
 
 @property (weak) IBOutlet KGNoiseView *backgroundView;
 @property (weak) IBOutlet DMTabBar *tabBar;

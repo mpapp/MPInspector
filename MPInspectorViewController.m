@@ -5,16 +5,14 @@
 //  Copyright (c) 2012 Matias Piipari. All rights reserved.
 //
 
-#import "MPManuscriptInspectorController.h"
-#import "KGNoise.h"
+#import "MPInspectorViewController.h"
+
+#import "MPPaletteViewController.h"
 
 #import "DMTabBar.h"
 #import "DMTabBarItem.h"
 
-#import "MPPageLayoutPaletteController.h"
-#import "MPRequirementPaletteController.h"
-
-#import <Feather/NSView+MPExtensions.h>
+#import "KGNoise.h"
 
 #import "JKConfigurationHeaderRowView.h"
 #import "JKConfigurationHeaderView.h"
@@ -22,19 +20,11 @@
 #import "JKConfiguration.h"
 #import "JKOutlineView.h"
 
-#import <Feather/NSArray+MPExtensions.h>
-#import <Feather/NSString+MPExtensions.h>
-#import <Feather/NSObject+MPExtensions.h>
+#import "NSView+MPExtensions.h"
 
 #import "RegexKitLite.h"
-#import "NSColor+Manuscripts.h"
-
-#import "MPDocument.h"
-#import "MPRootSections.h"
 
 #import "JSONKit.h"
-
-#import <Feather/NSNotificationCenter+MPExtensions.h>
 
 @interface MPInspectorViewController ()
 {
@@ -52,12 +42,6 @@
 
 @implementation MPInspectorViewController
 
-- (void)dealloc
-{
-    NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
-    [nc removeObserver:self];
-}
-
 - (void)loadView
 {
     [super loadView];
@@ -74,8 +58,6 @@
     assert(_palettesBySelectionType);
     
     assert(_backgroundView);
-    _backgroundView.backgroundColor = [NSColor manuscriptsBackgroundViewColor];
-    _backgroundView.noiseOpacity = [NSColor manuscriptsBackgroundViewNoiseOpacity];
     
     self.selectionType = @"MPSection";
 }
@@ -192,7 +174,20 @@
 
 - (NSString *)controllerKeyForPaletteNibName:(NSString *)nibName
 {
-    return [[nibName stringByReplacingOccurrencesOfRegex:@"^MP" withString:@""] camelCasedString];
+    // MPFoobarPaletteController => foobarPaletteController
+    NSString *prefixlessControllerName = [nibName stringByReplacingOccurrencesOfRegex:@"^MP" withString:@""];
+    NSMutableString *str = [NSMutableString stringWithString:prefixlessControllerName];
+    [str replaceOccurrencesOfRegex:@"^(.)"
+                        usingBlock:^NSString *(NSInteger captureCount,
+                                                      NSString *const __unsafe_unretained *capturedStrings,
+                                                      const NSRange *capturedRanges,
+                                                      volatile BOOL *const stop)
+    {
+        assert(captureCount > 0);
+        return [capturedStrings[0] lowercaseString];
+    }];
+    
+    return [str copy];
 }
 
 - (void)setPaletteContainerWithKey:(NSString *)key
@@ -456,29 +451,5 @@
 {
     return [self outlineView:outlineView isGroupItem:item];
 }
-
-#pragma mark - MPObjectSelectionChangeObserver
-
-- (void)didChangeMasterSelectionToSingleObject:(NSNotification *)notification
-{
-    NSString *classStr =
-    [notification.object isKindOfClass:[MPManagedObject class]] ?
-    NSStringFromClass([notification.object class]) :
-    NSStringFromClass([notification.object representedObjectClass]);
-    
-    if (self.palettesBySelectionType[classStr])
-        self.selectionType = classStr;
-}
-
-- (void)didChangeDetailSelectionToSingleObject:(NSNotification *)notification
-{
-    
-}
-- (void)didChangeMasterSelectionToMultipleObjects:(NSNotification *)notification
-{
-    assert([notification.object isKindOfClass:[NSArray class]]);
-    
-}
-- (void)didChangeDetailSelectionToMultipleObjects:(NSNotification *)notification {}
 
 @end

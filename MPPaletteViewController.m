@@ -7,7 +7,7 @@
 //
 
 #import "MPManuscriptsPaletteViewController.h"
-#import "MPManuscriptInspectorController.h"
+#import "MPInspectorViewController.h"
 
 #import "JKConfiguration.h"
 

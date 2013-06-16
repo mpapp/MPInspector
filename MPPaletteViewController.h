@@ -8,7 +8,7 @@
 
 #import "PARViewController.h"
 
-@class MPManuscriptInspectorController, JKConfiguration;
+@class MPInspectorViewController, JKConfiguration;
 
 @interface MPPaletteViewController : PARViewController
 
@@ -16,7 +16,7 @@
 
 @property (weak) IBOutlet NSPopover *infoPopover;
 
-@property (weak) IBOutlet MPManuscriptInspectorController *inspectorController;
+@property (weak) IBOutlet MPInspectorViewController *inspectorController;
 @property (weak) NSOutlineView *inspectorOutlineView;
 @property (weak) JKConfiguration *configuration;
 
