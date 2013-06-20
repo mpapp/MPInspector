@@ -6,7 +6,7 @@
 //  Copyright (c) 2012 Manuscripts.app Limited. All rights reserved.
 //
 
-#import "MPManuscriptsPaletteViewController.h"
+#import "MPPaletteViewController.h"
 #import "MPInspectorViewController.h"
 
 #import "JKConfiguration.h"

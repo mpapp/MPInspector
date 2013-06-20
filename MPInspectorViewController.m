@@ -12,8 +12,6 @@
 #import "DMTabBar.h"
 #import "DMTabBarItem.h"
 
-#import "KGNoise.h"
-
 #import "JKConfigurationHeaderRowView.h"
 #import "JKConfigurationHeaderView.h"
 #import "JKConfigurationGroup.h"
@@ -24,12 +22,9 @@
 
 #import "RegexKitLite.h"
 
-#import "JSONKit.h"
-
 @interface MPInspectorViewController ()
 {
     NSString *_selectionType;
-    MPManuscriptsPackageController *_packageController;
 }
 
 @property (strong) NSDictionary *palettesByEntityType;
@@ -49,7 +44,14 @@
     NSURL *paletteConfigURL = [[NSBundle mainBundle] URLForResource:@"palettes" withExtension:@"json"];
     assert(paletteConfigURL);
     
-    NSDictionary *dict = [[[NSData alloc] initWithContentsOfURL:paletteConfigURL] objectFromJSONData];
+    NSData *data = [[NSData alloc] initWithContentsOfURL:paletteConfigURL];
+    NSError *err = nil;
+    NSDictionary *dict = [NSJSONSerialization JSONObjectWithData:data options:0 error:&err];
+    if (!dict)
+    {
+        NSLog(@"Failed to load pallete configuration from JSON file at %@ (%@)", paletteConfigURL, err);
+    }
+    
     self.palettesByEntityType = dict[@"palettes"];
     self.palettesBySelectionType = dict[@"selectionType"];
     
@@ -112,15 +114,16 @@
     _tabBar.gradientColorStart = nil;
     _tabBar.borderColor = nil;
     
-    [_tabBar handleTabBarItemSelection:^(DMTabBarItemSelectionType selectionType,
+    [_tabBar handleTabBarItemSelection:^(DMTabBarItemSelectionType itemSelectionType,
                                          DMTabBarItem *targetTabBarItem,
                                          NSUInteger targetTabBarItemIndex)
      {
-         if (selectionType == DMTabBarItemSelectionType_WillSelect)
+         if (itemSelectionType == DMTabBarItemSelectionType_WillSelect)
          {
              assert(_tabView);
              [_tabView selectTabViewItem:[_tabView.tabViewItems objectAtIndex:targetTabBarItemIndex]];
-         } else if (selectionType == DMTabBarItemSelectionType_DidSelect)
+         }
+         else if (itemSelectionType == DMTabBarItemSelectionType_DidSelect)
          {
              //NSLog(@"Did select %lu/%@",targetTabBarItemIndex,targetTabBarItem);
              //[[[[[[[_tabView selectedTabViewItem] view] subviews] firstObject] subviews] firstObject] reloadData];
@@ -261,14 +264,13 @@
         {
             NSDictionary *palette = self.palettesByEntityType[paletteName];
             
-            NSString *paletteName = palette[@"title"]; assert(paletteName);
+            NSString *name = palette[@"title"]; assert(paletteName);
             
             assert(palette[@"modes"]);
             
-            NSString *paletteNibName = [paletteName stringByAppendingFormat:@"PaletteController"];
+            NSString *paletteNibName = [name stringByAppendingFormat:@"PaletteController"];
             
-            JKConfigurationGroup *configGroup
-            = [self configurationGroupForPaletteContainerKey:paletteContainerKey
+            JKConfigurationGroup *configGroup = [self configurationGroupForPaletteContainerKey:paletteContainerKey
                                               paletteNibName:paletteNibName modes:palette[@"modes"]];
             
             [groups addObject:configGroup];
@@ -309,9 +311,9 @@
         headerView.textField.stringValue = [item title];
         
         // inverted
-        headerView.headerGradientStartColor = [NSColor manuscriptsPaletteSectionHeaderGradientStartColor];
-        headerView.headerGradientEndColor = [NSColor manuscriptsPaletteSectionHeaderGradientEndColor];
-        
+        headerView.headerGradientStartColor = [NSColor colorWithDeviceWhite:0.81 alpha:1.0];
+        headerView.headerGradientEndColor = [NSColor colorWithDeviceWhite:0.91 alpha:1.0];
+
         return headerView;
 	}
     
