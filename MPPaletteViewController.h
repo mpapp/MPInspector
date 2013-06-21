@@ -11,8 +11,11 @@
 @class MPInspectorViewController, JKConfiguration;
 
 @interface MPPaletteViewController : PARViewController
+{
+    __unsafe_unretained id <MPPaletteViewControllerDelegate> delegate;
+}
 
-@property (weak) id <MPPaletteViewControllerDelegate> delegate;
+@property (assign) id <MPPaletteViewControllerDelegate> delegate;
 @property (weak) JKConfiguration *configuration;
 
 @property (readonly) NSSet *allowedConfigurationModes;

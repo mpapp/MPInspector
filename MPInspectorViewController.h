@@ -19,7 +19,7 @@
 
 @property (strong) NSString *entityType;
 
-
-@property (readonly, strong) NSDictionary *paletteControllersByEntityType;
+- (void)refresh;
+- (void)refreshForced:(BOOL)forced;
 
 @end

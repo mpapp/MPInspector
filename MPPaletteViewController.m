@@ -15,6 +15,8 @@
 
 @implementation MPPaletteViewController
 
+@synthesize delegate = _delegate;
+
 - (instancetype)initWithDelegate:(id <MPPaletteViewControllerDelegate>)aDelegate
 {
     return [self initWithDelegate:aDelegate nibName:self.defaultNibName];
@@ -32,7 +34,7 @@
 
 - (void)dealloc
 {
-    self.delegate = nil;
+    _delegate = nil;
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
