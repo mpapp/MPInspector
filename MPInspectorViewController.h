@@ -1,31 +1,25 @@
 //
-//  MPInspectorViewController.h
+//  MPPaletteViewController.h
 //
-//  Created by Matias Piipari on 17/09/2012.
-//  Copyright (c) 2012 Matias Piipari. All rights reserved.
-//
+//  Created by Matias Piipari on 21/12/2012.
+//  Copyright (c) 2012 Manuscripts.app Limited. All rights reserved.
 
 #import <Cocoa/Cocoa.h>
 
 #import "PARViewController.h"
+#import "MPPaletteViewController.h"
 
 @class DMTabBar, JKOutlineView;
 @class MPPaletteViewController;
 
-@interface MPInspectorViewController : PARViewController <NSOutlineViewDataSource, NSOutlineViewDelegate>
+@interface MPInspectorViewController : PARViewController <NSOutlineViewDataSource, NSOutlineViewDelegate, MPPaletteViewControllerDelegate>
 
-@property (weak) IBOutlet NSView *backgroundView;
 @property (weak) IBOutlet DMTabBar *tabBar;
 @property (weak) IBOutlet NSTabView *tabView;
 
-@property (strong) NSString *selectionType;
-@property (readonly, strong) NSDictionary *palettesBySelectionType;
+@property (strong) NSString *entityType;
 
-- (CGFloat)heightForPaletteViewController:(MPPaletteViewController *)paletteViewController;
-- (void)noteHeightOfPaletteViewControllerChanged:(MPPaletteViewController *)paletteViewController;
 
-- (void)setPaletteContainerWithKey:(NSString *)key;
-
-- (void)configurePaletteViewController:(MPPaletteViewController *)vc;
+@property (readonly, strong) NSDictionary *paletteControllersByEntityType;
 
 @end

@@ -1,10 +1,8 @@
 //
 //  MPPaletteViewController.m
-//  Manuscripts
 //
 //  Created by Matias Piipari on 21/12/2012.
 //  Copyright (c) 2012 Manuscripts.app Limited. All rights reserved.
-//
 
 #import "MPPaletteViewController.h"
 #import "MPInspectorViewController.h"
@@ -12,30 +10,45 @@
 #import "JKConfiguration.h"
 
 @interface MPPaletteViewController ()
+@property (readonly) NSString *defaultNibName;
 @end
 
 @implementation MPPaletteViewController
 
-- (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+- (instancetype)initWithDelegate:(id <MPPaletteViewControllerDelegate>)aDelegate
 {
-    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
-    if (self)
+    return [self initWithDelegate:aDelegate nibName:self.defaultNibName];
+}
+
+- (instancetype)initWithDelegate:(id <MPPaletteViewControllerDelegate>)aDelegate nibName:(NSString *)aName
+{
+    if (self = [super initWithNibName:aName bundle:nil])
     {
+        self.delegate = aDelegate;
         self.configuration.mode = [self defaultConfigurationMode];
     }
-    
     return self;
 }
 
-- (void)awakeFromNib
+- (void)dealloc
 {
-    [super awakeFromNib];
+    self.delegate = nil;
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
-- (void)getInfo:(id)sender
+- (NSString *)defaultNibName
 {
-    [self.infoPopover showRelativeToRect:[self.infoButton bounds] ofView:self.infoButton preferredEdge:NSMaxYEdge];
+    // by default use the class name but strip the Controller part
+    // MPPaletteViewController -> MPPaletteView.nib
+    NSString *className = NSStringFromClass([self class]);
+    
+    NSRange r = [className rangeOfString:@"Controller" options:NSCaseInsensitiveSearch];
+	return (r.location != NSNotFound ? [className substringToIndex:r.location] : className);
 }
+
+
+#pragma mark -
+#pragma mark Configuration Modes
 
 - (void)setConfigurationMode:(NSString *)configurationMode
 {
@@ -44,11 +57,12 @@
 
 - (void)setConfigurationMode:(NSString *)configurationMode animated:(BOOL)animated
 {
-    assert([self.class.allowedConfigurationModes containsObject:configurationMode]);
+    assert([self.allowedConfigurationModes containsObject:configurationMode]);
+    
     if ([self.configuration.mode isEqualToString:configurationMode]) return;
     
     self.configuration.mode = configurationMode;
-    [self.inspectorController noteHeightOfPaletteViewControllerChanged:self];
+    [self.delegate noteHeightOfPaletteViewControllerChanged:self];
 }
 
 - (NSString *)configurationMode
@@ -56,17 +70,14 @@
     return _configuration.mode;
 }
 
-+ (NSSet *)allowedConfigurationModes
+- (NSSet *)allowedConfigurationModes
 {
-    static NSSet *_allowedConfigurationModes = nil;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        _allowedConfigurationModes = [NSSet setWithArray:@[ @"normal" ]];
-    });
-    
-    return _allowedConfigurationModes;
+    return [NSSet setWithArray:[_configuration.modes allKeys]];
 }
 
-- (NSString *)defaultConfigurationMode { return @"normal"; }
+- (NSString *)defaultConfigurationMode
+{
+    return @"normal";
+}
 
 @end

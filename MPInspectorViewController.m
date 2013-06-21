@@ -1,12 +1,10 @@
 //
-//  MPInspectorViewController.m
+//  MPPaletteViewController.h
 //
-//  Created by Matias Piipari on 17/09/2012.
-//  Copyright (c) 2012 Matias Piipari. All rights reserved.
-//
+//  Created by Matias Piipari on 21/12/2012.
+//  Copyright (c) 2012 Manuscripts.app Limited. All rights reserved.
 
 #import "MPInspectorViewController.h"
-
 #import "MPPaletteViewController.h"
 
 #import "DMTabBar.h"
@@ -14,35 +12,52 @@
 
 #import "JKConfigurationHeaderRowView.h"
 #import "JKConfigurationHeaderView.h"
-#import "JKConfigurationGroup.h"
 #import "JKConfiguration.h"
 #import "JKOutlineView.h"
 
 #import "NSView+MPExtensions.h"
-
 #import "RegexKitLite.h"
 
 @interface MPInspectorViewController ()
 {
-    NSString *_selectionType;
+
 }
 
-@property (strong) NSDictionary *palettesByEntityType;
+@property (strong) NSDictionary *paletteConfigurations;
+@property (strong) NSDictionary *tabConfigurations;
+
+@property (strong) NSDictionary *paletteControllersByEntityType;
+
+- (void)setUpTabBarForEntityType:(NSString *)entityType;
+
+
+
+
+
+
 @property (strong) NSMutableDictionary *configurationsByPaletteNibName;
-@property (strong) NSDictionary *palettesBySelectionType;
 @property (strong) NSDictionary *palettesForTabTitle;
 
-@property (readwrite) BOOL hasAwoken;
+- (void)setPaletteContainerWithKey:(NSString *)key;
+- (CGFloat)heightForPaletteViewController:(MPPaletteViewController *)paletteViewController;
 @end
+
+
 
 @implementation MPInspectorViewController
 
-- (void)loadView
+@synthesize entityType = _entityType;
+
+- (NSString *)configurationFilename
 {
-    [super loadView];
-    
-    NSURL *paletteConfigURL = [[NSBundle mainBundle] URLForResource:@"palettes" withExtension:@"json"];
-    assert(paletteConfigURL);
+    return @"Inspector_Palettes";
+}
+
+- (NSDictionary *)configurationDictionary
+{
+    NSURL *paletteConfigURL = [[NSBundle mainBundle] URLForResource:self.configurationFilename
+                                                      withExtension:@"json"
+                                                       subdirectory:@"Configuration"];
     
     NSData *data = [[NSData alloc] initWithContentsOfURL:paletteConfigURL];
     NSError *err = nil;
@@ -52,85 +67,98 @@
         NSLog(@"Failed to load pallete configuration from JSON file at %@ (%@)", paletteConfigURL, err);
     }
     
-    self.palettesByEntityType = dict[@"palettes"];
-    self.palettesBySelectionType = dict[@"selectionType"];
-    
-    _configurationsByPaletteNibName = [NSMutableDictionary dictionaryWithCapacity:20];
-    
-    assert(_palettesBySelectionType);
-    
-    assert(_backgroundView);
-    
-    self.selectionType = @"MPSection";
+    assert(dict);
+    return dict;
 }
 
-- (NSString *)selectionType
+- (NSString *)defaultEntityType
 {
-    return _selectionType;
+    return @"MTPublication";
 }
 
-- (void)setSelectionType:(NSString *)selectionType
+- (void)loadView
 {
-    _selectionType = selectionType;
-    [self setUpTabBarForSelectionType:selectionType];
-    [self setUpPaletteSectionsForSelectionType:selectionType];
+    [super loadView];
+    
+    NSDictionary *dict = [self configurationDictionary];
+    self.paletteConfigurations = dict[@"palettes"];
+    self.tabConfigurations = dict[@"tabs"];
+
+    self.entityType = self.defaultEntityType;
 }
 
+- (NSString *)entityType
+{
+    return _entityType;
+}
+
+- (void)setEntityType:(NSString *)entityType
+{
+    _entityType = entityType;
+    
+    [self setUpTabBarForEntityType:entityType];
+    //[self setUpTabViewForEntityType:entityType];
+}
+
+
+#pragma mark -
 #pragma mark - Tab setup
 
-- (void)setUpTabBarForSelectionType:(NSString *)selectionType
+- (void)setUpTabBarForEntityType:(NSString *)entityType
 {
-    NSArray *tabConfigurations = self.palettesBySelectionType[selectionType];
+    // make sure we have the outlets set up
+    assert(self.tabBar && self.tabView);
+
+    while ([self.tabView numberOfTabViewItems] > 0)
+        [self.tabView removeTabViewItem:[self.tabView tabViewItemAtIndex:0]];
     
-    NSMutableArray *items = [NSMutableArray arrayWithCapacity:tabConfigurations.count];
-    for (NSUInteger i = 0; i < tabConfigurations.count; i++)
+    NSArray *tabs = self.tabConfigurations[entityType];
+    
+    NSMutableArray *items = [NSMutableArray arrayWithCapacity:tabs.count];
+    for (NSUInteger i = 0; i < tabs.count; i++)
     {
-        [_tabView addTabViewItem:[[NSTabViewItem alloc] initWithIdentifier:[NSString stringWithFormat:@"tabView%lu", i+1]]];
+        // add the tabs to the tabview
+        NSDictionary *tabConfiguration = tabs[i];
+        NSTabViewItem *tabViewItem = [[NSTabViewItem alloc] initWithIdentifier:tabConfiguration[@"identifier"]];
+        [self.tabView addTabViewItem:tabViewItem];
         
-        NSDictionary *tabConfiguration = tabConfigurations[i];
+        // set up the DMTabBarItems
         NSString *iconName = tabConfiguration[@"icon"];
+        NSString *alternateIconName = tabConfiguration[@"selectedIcon"];
+        NSString *title = tabConfiguration[@"title"];
         NSString *tooltip = tabConfiguration[@"toolTip"];
-        
-        NSImage *itemIcon = [NSImage imageNamed:iconName]; assert(itemIcon);
-        [itemIcon setTemplate:YES];
+                
+        NSImage *itemIcon = [NSImage imageNamed:iconName];        
         DMTabBarItem *item = [DMTabBarItem tabBarItemWithIcon:itemIcon tag:0];
-        item.toolTip = tooltip;
+        item.toolTip = (tooltip ? tooltip : title);
         item.keyEquivalent = [NSString stringWithFormat:@"%lu", i + 1];
         item.keyEquivalentModifierMask = NSCommandKeyMask;
         
+        if (alternateIconName)
+            item.alternateIcon = [NSImage imageNamed:alternateIconName];
+
         [items addObject:item];
     }
+    // load the items on the tabbar
+    self.tabBar.tabBarItems = items;
     
-    // Load them
-    assert(_tabBar);
-    _tabBar.tabBarItems = items;
-    
-    /*
-     _tabBar.gradientColorEnd = [NSColor manuscriptsPaletteSectionHeaderGradientEndColor];
-     _tabBar.gradientColorStart = [NSColor manuscriptsPaletteSectionHeaderGradientStartColor];
-     _tabBar.borderColor = [NSColor manuscriptsDividerColor];
-     */
-    _tabBar.gradientColorEnd = nil;
-    _tabBar.gradientColorStart = nil;
-    _tabBar.borderColor = nil;
-    
-    [_tabBar handleTabBarItemSelection:^(DMTabBarItemSelectionType itemSelectionType,
-                                         DMTabBarItem *targetTabBarItem,
-                                         NSUInteger targetTabBarItemIndex)
+    // handle tabBar selection
+    [self.tabBar handleTabBarItemSelection:^(DMTabBarItemSelectionType itemSelectionType,
+                                             DMTabBarItem *targetTabBarItem,
+                                             NSUInteger targetTabBarItemIndex)
      {
          if (itemSelectionType == DMTabBarItemSelectionType_WillSelect)
          {
-             assert(_tabView);
-             [_tabView selectTabViewItem:[_tabView.tabViewItems objectAtIndex:targetTabBarItemIndex]];
-         }
-         else if (itemSelectionType == DMTabBarItemSelectionType_DidSelect)
-         {
-             //NSLog(@"Did select %lu/%@",targetTabBarItemIndex,targetTabBarItem);
-             //[[[[[[[_tabView selectedTabViewItem] view] subviews] firstObject] subviews] firstObject] reloadData];
+             // FUTURE: send current tab palettes a will hide and new tab palettes a will show message
+             NSTabViewItem *tabViewItem = self.tabView.tabViewItems[targetTabBarItemIndex];
+             [self.tabView selectTabViewItem:tabViewItem];
          }
      }];
 }
 
+
+/*     [self setUpPalettesForEntityType:entityType]; */
+/*
 #pragma mark - Palette container setup
 
 - (JKOutlineView *)newPaletteContainerForTabViewIndex:(NSUInteger)viewIndex identifier:(NSString *)identifier
@@ -161,16 +189,12 @@
     
     [paletteContainer setHeaderView:nil];
     
-    [paletteContainer registerNib:[[NSNib alloc] initWithNibNamed:@"MPInspectorPaletteRowView" bundle:nil]
-                    forIdentifier:@"MPInspectorPaletteRowView"];
-    [paletteContainer registerNib:[[NSNib alloc] initWithNibNamed:@"MPInspectorPaletteHeaderView" bundle:nil]
-                    forIdentifier:@"MPInspectorPaletteHeaderView"];
-    [paletteContainer registerNib:[[NSNib alloc] initWithNibNamed:@"MPInspectorPaletteHeaderRowView" bundle:nil]
-                    forIdentifier:@"MPInspectorPaletteHeaderRowView"];
-    
-    [[[_tabView tabViewItemAtIndex:viewIndex] view] addSubviewConstrainedToSuperViewEdges:scrollView
-                                                                                topOffset:0 rightOffset:0 bottomOffset:0 leftOffset:0];
-    
+    NSTabViewItem *tabViewItem = [_tabView tabViewItemAtIndex:viewIndex];
+    [[tabViewItem view] addSubviewConstrainedToSuperViewEdges:scrollView
+                                                    topOffset:0
+                                                  rightOffset:0
+                                                 bottomOffset:0
+                                                   leftOffset:0];
     assert(paletteContainer);
     return paletteContainer;
 }
@@ -178,28 +202,24 @@
 - (NSString *)controllerKeyForPaletteNibName:(NSString *)nibName
 {
     // MPFoobarPaletteController => foobarPaletteController
-    NSString *prefixlessControllerName = [nibName stringByReplacingOccurrencesOfRegex:@"^MP" withString:@""];
-    NSMutableString *str = [NSMutableString stringWithString:prefixlessControllerName];
-    [str replaceOccurrencesOfRegex:@"^(.)"
-                        usingBlock:^NSString *(NSInteger captureCount,
-                                                      NSString *const __unsafe_unretained *capturedStrings,
-                                                      const NSRange *capturedRanges,
-                                                      volatile BOOL *const stop)
-    {
-        assert(captureCount > 0);
-        return [capturedStrings[0] lowercaseString];
-    }];
+    // assuming a capitalized prefix followed by a capitalized name
+    NSRange lcr = [nibName rangeOfCharacterFromSet:[NSCharacterSet lowercaseLetterCharacterSet]];
+    assert(lcr.location != NSNotFound && lcr.location > 0);
     
-    return [str copy];
+    NSString *firstLetter = [[nibName substringWithRange:NSMakeRange(lcr.location - 1, 1)] lowercaseString];
+    return [NSString stringWithFormat:@"%@%@", firstLetter, [nibName substringFromIndex:lcr.location]];
 }
 
 - (void)setPaletteContainerWithKey:(NSString *)key
 {
     NSString *title = [key stringByReplacingOccurrencesOfRegex:@"PaletteContainer$" withString:@""];
-    NSArray *tabs = self.palettesBySelectionType[self.selectionType]; assert(tabs);
+    NSArray *tabs = self.palettesBySelectionType[self.selectionType];
+    assert(tabs);
+    
     __block NSDictionary *configurationForKey = nil;
     __block NSUInteger tabIndex = NSNotFound;
-    [tabs enumerateObjectsUsingBlock:^(NSDictionary *tabConfiguration, NSUInteger idx, BOOL *stop) {
+    [tabs enumerateObjectsUsingBlock:^(NSDictionary *tabConfiguration, NSUInteger idx, BOOL *stop)
+    {
         if ([tabConfiguration[@"title"] isEqualToString:title])
         {
             tabIndex = idx;
@@ -209,6 +229,8 @@
     }];
     assert(tabIndex != NSNotFound && configurationForKey);
     
+    // this requires a read-write property with an IBOutlet named according to the title of the tab
+    // added to your MPInspectorViewController subclass
     JKOutlineView *outlineView = [self newPaletteContainerForTabViewIndex:tabIndex identifier:key];
     [self setValue:outlineView forKey:key];
 }
@@ -224,10 +246,7 @@
     assert(vc.title);
     
     JKConfigurationGroup *group = [JKConfigurationGroup configurationWithTitle:vc.title];
-    
-    
     JKConfiguration *paletteConfig = _configurationsByPaletteNibName[paletteNibName];
-    
     if (!paletteConfig)
     {
         paletteConfig = [JKConfiguration configurationWithNibName:paletteNibName modes:dictionary ];
@@ -245,7 +264,7 @@
 
 - (void)setUpPaletteSectionsForSelectionType:(NSString *)selectionType
 {
-    NSArray *tabs = self.palettesBySelectionType[selectionType]; assert(tabs);
+    NSArray *tabs = self.palettesBySelectionType[selectionType];
     NSMutableDictionary *palettesForTabs = [NSMutableDictionary dictionaryWithCapacity:tabs.count];
     
     for (NSUInteger i = 0; i < tabs.count; i++)
@@ -453,5 +472,5 @@
 {
     return [self outlineView:outlineView isGroupItem:item];
 }
-
+*/
 @end

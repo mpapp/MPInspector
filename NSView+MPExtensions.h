@@ -1,10 +1,8 @@
 //
 //  NSView+MPExtensions.h
-//  Manuscripts
 //
 //  Created by Matias Piipari on 21/12/2012.
 //  Copyright (c) 2012 Manuscripts.app Limited. All rights reserved.
-//
 
 #import <Cocoa/Cocoa.h>
 
