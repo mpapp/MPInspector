@@ -225,61 +225,6 @@
     [paletteContainer expandItem:nil expandChildren:YES];
 }
 
-
-//
-//- (void)setUpTabViewForEntityType:(NSString *)entityType
-//{
-//
-//    for (NSUInteger i = 0; i < tabs.count; i++)
-//    {
-//        NSString *title = tabConfiguration[@"title"]; assert(title);
-//        NSArray *paletteNames = tabConfiguration[@"palettes"];
-//        
-//        NSString *paletteContainerKey = [title stringByAppendingFormat:@"PaletteContainer"];
-//        
-//        [self setPaletteContainerWithKey:paletteContainerKey];
-//        
-//        NSMutableArray *groups = [NSMutableArray arrayWithCapacity:paletteNames.count];
-//        
-//        for (NSString *paletteName in paletteNames)
-//        {
-//            NSDictionary *palette = self.palettesByEntityType[paletteName];
-//            
-//            NSString *name = palette[@"title"]; assert(paletteName);
-//            
-//            assert(palette[@"modes"]);
-//            
-//            NSString *paletteNibName = [name stringByAppendingFormat:@"PaletteController"];
-//            
-//            JKConfigurationGroup *configGroup = [self configurationGroupForPaletteContainerKey:paletteContainerKey
-//                                                                                paletteNibName:paletteNibName modes:palette[@"modes"]];
-//            
-//            [groups addObject:configGroup];
-//        }
-//        
-//        palettesForTabs[paletteContainerKey] = groups;
-//    }
-//    self.palettesForTabTitle = palettesForTabs;
-//    
-//    for (NSString *key in [self.palettesForTabTitle allKeys])
-//    {
-//        JKOutlineView *paletteContainer = [self valueForKey:key];
-//        paletteContainer.delegate = self;
-//        paletteContainer.dataSource = self;
-//        [paletteContainer reloadData];
-//        [paletteContainer expandItem:nil expandChildren:YES];
-//    }
-//    
-//    
-//    
-//    
-//    
-////    for (<#initialization#>; <#condition#>; <#increment#>) {
-////        - (void)setUpPalletesForTabWithIdentifier:(NSString *)tabIdentifier
-////
-////    }
-//}
-
 - (JKOutlineView *)paletteContainerForTabViewItem:(NSTabViewItem *)tabViewItem
 {
     // set up a new outline view as the palette container
@@ -320,56 +265,51 @@
 
 - (MPPaletteViewController *)paletteViewControllerForIdentifier:(NSString *)identifier
 {
+    // TODO setup the correct palette based on the identifier
     return [[MTInspectorOverviewSummaryController alloc] initWithDelegate:self];
 }
 
 
+// TODO: correctly hook up to the JKOutlineGroup system for getting the hide/unhide functionality
+// each palette controller should have a corresponding Configuration Group item with the title 
 
-
-
-
-
-
-/*     [self setUpPalettesForEntityType:entityType]; */
+// TODO: complete the proper outline view delegate and datasource methods
 /*
 
- 
-- (NSString *)controllerKeyForPaletteNibName:(NSString *)nibName
+- (void)setUpTabViewForEntityType:(NSString *)entityType
 {
-    // MPFoobarPaletteController => foobarPaletteController
-    // assuming a capitalized prefix followed by a capitalized name
-    NSRange lcr = [nibName rangeOfCharacterFromSet:[NSCharacterSet lowercaseLetterCharacterSet]];
-    assert(lcr.location != NSNotFound && lcr.location > 0);
-    
-    NSString *firstLetter = [[nibName substringWithRange:NSMakeRange(lcr.location - 1, 1)] lowercaseString];
-    return [NSString stringWithFormat:@"%@%@", firstLetter, [nibName substringFromIndex:lcr.location]];
-}
 
-- (void)setPaletteContainerWithKey:(NSString *)key
-{
-    NSString *title = [key stringByReplacingOccurrencesOfRegex:@"PaletteContainer$" withString:@""];
-    NSArray *tabs = self.palettesBySelectionType[self.selectionType];
-    assert(tabs);
-    
-    __block NSDictionary *configurationForKey = nil;
-    __block NSUInteger tabIndex = NSNotFound;
-    [tabs enumerateObjectsUsingBlock:^(NSDictionary *tabConfiguration, NSUInteger idx, BOOL *stop)
+    for (NSUInteger i = 0; i < tabs.count; i++)
     {
-        if ([tabConfiguration[@"title"] isEqualToString:title])
-        {
-            tabIndex = idx;
-            configurationForKey = tabConfiguration;
-            *stop = YES;
-        }
-    }];
-    assert(tabIndex != NSNotFound && configurationForKey);
-    
-    // this requires a read-write property with an IBOutlet named according to the title of the tab
-    // added to your MPInspectorViewController subclass
-    JKOutlineView *outlineView = [self newPaletteContainerForTabViewIndex:tabIndex identifier:key];
-    [self setValue:outlineView forKey:key];
-}
+        NSString *title = tabConfiguration[@"title"]; assert(title);
+        NSArray *paletteNames = tabConfiguration[@"palettes"];
 
+        NSString *paletteContainerKey = [title stringByAppendingFormat:@"PaletteContainer"];
+
+        [self setPaletteContainerWithKey:paletteContainerKey];
+
+        NSMutableArray *groups = [NSMutableArray arrayWithCapacity:paletteNames.count];
+
+        for (NSString *paletteName in paletteNames)
+        {
+            NSDictionary *palette = self.palettesByEntityType[paletteName];
+
+            NSString *name = palette[@"title"]; assert(paletteName);
+
+            assert(palette[@"modes"]);
+
+            NSString *paletteNibName = [name stringByAppendingFormat:@"PaletteController"];
+
+            JKConfigurationGroup *configGroup = [self configurationGroupForPaletteContainerKey:paletteContainerKey
+                                                                                paletteNibName:paletteNibName modes:palette[@"modes"]];
+
+            [groups addObject:configGroup];
+        }
+
+        palettesForTabs[paletteContainerKey] = groups;
+    }
+
+ 
 - (JKConfigurationGroup *)configurationGroupForPaletteContainerKey:(NSString *)paletteContainerKey
                                                     paletteNibName:(NSString *)paletteNibName
                                                              modes:(NSDictionary *)dictionary
