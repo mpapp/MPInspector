@@ -13,7 +13,6 @@
 #import "JKConfigurationHeaderRowView.h"
 #import "JKConfigurationHeaderView.h"
 #import "JKConfiguration.h"
-#import "JKOutlineView.h"
 
 //#import "NSView+MPExtensions.h"
 //#import "RegexKitLite.h"
@@ -37,7 +36,7 @@
 - (void)setUpTabsForEntityType:(NSString *)entityType;
 - (void)setUpTabViewItem:(NSTabViewItem *)tabViewItem tabConfiguration:(NSDictionary *)tabConfiguration;
 
-- (JKOutlineView *)paletteContainerForTabViewItem:(NSTabViewItem *)tabViewItem;
+- (NSOutlineView *)paletteContainerForTabViewItem:(NSTabViewItem *)tabViewItem;
 
 
 
@@ -104,6 +103,10 @@
     self.entityType = self.defaultEntityType;
 }
 
+
+#pragma mark -
+#pragma mark EntityType
+
 - (NSString *)entityType
 {
     return _entityType;
@@ -117,8 +120,6 @@
 }
 
 
-#pragma mark -
-#pragma mark Refresh
 
 #pragma mark -
 #pragma mark Refresh
@@ -200,7 +201,7 @@
 - (void)setUpTabViewItem:(NSTabViewItem *)tabViewItem tabConfiguration:(NSDictionary *)tabConfiguration
 {    
     // set up the container outlineView
-    JKOutlineView *paletteContainer = [self paletteContainerForTabViewItem:tabViewItem];
+    NSOutlineView *paletteContainer = [self paletteContainerForTabViewItem:tabViewItem];
     self.paletteContainers[tabViewItem.identifier] = paletteContainer;
     
     // populate the palettes
@@ -225,10 +226,10 @@
     [paletteContainer expandItem:nil expandChildren:YES];
 }
 
-- (JKOutlineView *)paletteContainerForTabViewItem:(NSTabViewItem *)tabViewItem
+- (NSOutlineView *)paletteContainerForTabViewItem:(NSTabViewItem *)tabViewItem
 {
     // set up a new outline view as the palette container
-    JKOutlineView *paletteContainer = [[JKOutlineView alloc] initWithFrame:self.view.bounds];
+    NSOutlineView *paletteContainer = [[NSOutlineView alloc] initWithFrame:self.view.bounds];
     paletteContainer.translatesAutoresizingMaskIntoConstraints = NO;
     paletteContainer.indentationMarkerFollowsCell = NO;
     paletteContainer.indentationPerLevel = 0;
