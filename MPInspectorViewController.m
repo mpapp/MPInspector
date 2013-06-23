@@ -33,10 +33,15 @@
 @property (strong) NSMutableDictionary *paletteContainers;
 @property (strong) NSMutableDictionary *paletteControllers;
 
+// for easy lookup we also store the palette controllers under their own identifier
+@property (strong) NSMutableDictionary *paletteControllersByIdentifier;
+
 - (void)setUpTabsForEntityType:(NSString *)entityType;
 - (void)setUpTabViewItem:(NSTabViewItem *)tabViewItem tabConfiguration:(NSDictionary *)tabConfiguration;
 
 - (NSOutlineView *)paletteContainerForTabViewItem:(NSTabViewItem *)tabViewItem;
+
+
 
 
 
@@ -99,6 +104,7 @@
     
     self.paletteContainers = [NSMutableDictionary dictionaryWithCapacity:[self.tabConfigurations count]];
     self.paletteControllers = [NSMutableDictionary dictionaryWithCapacity:[self.tabConfigurations count]];
+    self.paletteControllersByIdentifier = [NSMutableDictionary dictionaryWithCapacity:[self.tabConfigurations count] * 10];
     
     self.entityType = self.defaultEntityType;
 }
@@ -210,9 +216,11 @@
     
     for (NSString *paletteIdentifier in paletteIdentifiers)
     {
+        // FUTURE: in order to support the same palette in multiple tabs we could
+        // concatenate the tab identifier and palette identifier, not done for simplicity right now
+        // NSString *uniqueIdentifier = [NSString stringWithFormat:@"%@.%@", tabViewItem.identifier, paletteIdentifier];
+        
         MPPaletteViewController *viewController = [self paletteViewControllerForIdentifier:paletteIdentifier];
-        
-        
         [palettes addObject:viewController];
     }
     
@@ -230,7 +238,6 @@
 {
     // set up a new outline view as the palette container
     NSOutlineView *paletteContainer = [[NSOutlineView alloc] initWithFrame:self.view.bounds];
-    paletteContainer.translatesAutoresizingMaskIntoConstraints = NO;
     paletteContainer.indentationMarkerFollowsCell = NO;
     paletteContainer.indentationPerLevel = 0;
     paletteContainer.backgroundColor = [NSColor viewForegroundColor];
@@ -239,7 +246,8 @@
     paletteContainer.selectionHighlightStyle = NSTableViewSelectionHighlightStyleNone;
     paletteContainer.autosaveTableColumns = NO;
     paletteContainer.autoresizingMask = (NSViewWidthSizable | NSViewHeightSizable);
-    
+    paletteContainer.translatesAutoresizingMaskIntoConstraints = NO;
+
     // set the identifier to be that of the tab (same as tabviewitem)
     paletteContainer.identifier = tabViewItem.identifier;
     
@@ -266,261 +274,48 @@
 
 - (MPPaletteViewController *)paletteViewControllerForIdentifier:(NSString *)identifier
 {
-    // TODO setup the correct palette based on the identifier
-    return [[MTInspectorOverviewSummaryController alloc] initWithDelegate:self];
-}
-
-
-// TODO: correctly hook up to the JKOutlineGroup system for getting the hide/unhide functionality
-// each palette controller should have a corresponding Configuration Group item with the title 
-
-// TODO: complete the proper outline view delegate and datasource methods
-/*
-
-- (void)setUpTabViewForEntityType:(NSString *)entityType
-{
-
-    for (NSUInteger i = 0; i < tabs.count; i++)
+    // importantly we assume there will only be one instance of a palette per inspector
+    MPPaletteViewController *paletteController = self.paletteControllersByIdentifier[identifier];
+    if (!paletteController)
     {
-        NSString *title = tabConfiguration[@"title"]; assert(title);
-        NSArray *paletteNames = tabConfiguration[@"palettes"];
-
-        NSString *paletteContainerKey = [title stringByAppendingFormat:@"PaletteContainer"];
-
-        [self setPaletteContainerWithKey:paletteContainerKey];
-
-        NSMutableArray *groups = [NSMutableArray arrayWithCapacity:paletteNames.count];
-
-        for (NSString *paletteName in paletteNames)
-        {
-            NSDictionary *palette = self.palettesByEntityType[paletteName];
-
-            NSString *name = palette[@"title"]; assert(paletteName);
-
-            assert(palette[@"modes"]);
-
-            NSString *paletteNibName = [name stringByAppendingFormat:@"PaletteController"];
-
-            JKConfigurationGroup *configGroup = [self configurationGroupForPaletteContainerKey:paletteContainerKey
-                                                                                paletteNibName:paletteNibName modes:palette[@"modes"]];
-
-            [groups addObject:configGroup];
-        }
-
-        palettesForTabs[paletteContainerKey] = groups;
-    }
-
- 
-- (JKConfigurationGroup *)configurationGroupForPaletteContainerKey:(NSString *)paletteContainerKey
-                                                    paletteNibName:(NSString *)paletteNibName
-                                                             modes:(NSDictionary *)dictionary
-{
-    NSString *controllerKey = [self controllerKeyForPaletteNibName:paletteNibName];
-    MPPaletteViewController *vc = [self valueForKey:controllerKey];
-    assert(vc && [vc isKindOfClass:[MPPaletteViewController class]]);
-    
-    assert(vc.title);
-    
-    JKConfigurationGroup *group = [JKConfigurationGroup configurationWithTitle:vc.title];
-    JKConfiguration *paletteConfig = _configurationsByPaletteNibName[paletteNibName];
-    if (!paletteConfig)
-    {
-        paletteConfig = [JKConfiguration configurationWithNibName:paletteNibName modes:dictionary ];
-        _configurationsByPaletteNibName[paletteNibName] = paletteConfig;
+        // MTInspectorOverviewSummary -> MTInspectorOverviewSummaryController
+        NSString *className = identifier;
+        if (![className hasSuffix:@"Controller"])
+            className = [identifier stringByAppendingString:@"Controller"];
+        
+        Class controllerClass = NSClassFromString(className);
+        assert ([controllerClass isSubclassOfClass:[MPPaletteViewController class]]);
+        
+        paletteController = [(MPPaletteViewController *)[controllerClass alloc] initWithDelegate:self identifier:identifier];
+                             
+        self.paletteControllersByIdentifier[identifier] = paletteController;
     }
     
-    assert(dictionary);
-    group.children = @[ paletteConfig ];
-    
-    JKOutlineView *outlineView = [self valueForKey:paletteContainerKey];
-    [outlineView registerNib:[[NSNib alloc] initWithNibNamed:paletteNibName bundle:nil] forIdentifier:paletteNibName];
-    
-    return group;
-}
-
-- (void)setUpPaletteSectionsForSelectionType:(NSString *)selectionType
-{
-    NSArray *tabs = self.palettesBySelectionType[selectionType];
-    NSMutableDictionary *palettesForTabs = [NSMutableDictionary dictionaryWithCapacity:tabs.count];
-    
-    for (NSUInteger i = 0; i < tabs.count; i++)
-    {
-        NSDictionary *tabConfiguration = self.palettesBySelectionType[selectionType][i];
-        NSString *title = tabConfiguration[@"title"]; assert(title);
-        NSArray *paletteNames = tabConfiguration[@"palettes"];
-        
-        NSString *paletteContainerKey = [title stringByAppendingFormat:@"PaletteContainer"];
-        
-        [self setPaletteContainerWithKey:paletteContainerKey];
-        
-        NSMutableArray *groups = [NSMutableArray arrayWithCapacity:paletteNames.count];
-        
-        for (NSString *paletteName in paletteNames)
-        {
-            NSDictionary *palette = self.palettesByEntityType[paletteName];
-            
-            NSString *name = palette[@"title"]; assert(paletteName);
-            
-            assert(palette[@"modes"]);
-            
-            NSString *paletteNibName = [name stringByAppendingFormat:@"PaletteController"];
-            
-            JKConfigurationGroup *configGroup = [self configurationGroupForPaletteContainerKey:paletteContainerKey
-                                              paletteNibName:paletteNibName modes:palette[@"modes"]];
-            
-            [groups addObject:configGroup];
-        }
-        
-        palettesForTabs[paletteContainerKey] = groups;
-    }
-    self.palettesForTabTitle = palettesForTabs;
-    
-    for (NSString *key in [self.palettesForTabTitle allKeys])
-    {
-        JKOutlineView *paletteContainer = [self valueForKey:key];
-        paletteContainer.delegate = self;
-        paletteContainer.dataSource = self;
-        [paletteContainer reloadData];
-        [paletteContainer expandItem:nil expandChildren:YES];
-    }
-}
-
-#pragma mark - Outline view configuration
-
-- (BOOL) outlineView:(NSOutlineView *)outlineView
-         isGroupItem:(id)item
-{
-    return [item isKindOfClass:[JKConfigurationGroup class]];
+    return paletteController;
 }
 
 
-- (NSView *)outlineView:(NSOutlineView *)outlineView
-     viewForTableColumn:(NSTableColumn *)tableColumn item:(id)item
-{
-    if ([self outlineView:outlineView isGroupItem:item])
-    {
-		JKConfigurationHeaderView *headerView
-        = [outlineView makeViewWithIdentifier:@"MPInspectorPaletteHeaderView" owner:self];
-        
-        assert([headerView isKindOfClass:[JKConfigurationHeaderView class]]);
-        headerView.textField.stringValue = [item title];
-        
-        // inverted
-        headerView.headerGradientStartColor = [NSColor colorWithDeviceWhite:0.81 alpha:1.0];
-        headerView.headerGradientEndColor = [NSColor colorWithDeviceWhite:0.91 alpha:1.0];
+#pragma mark -
+#pragma mark OutlineView Delegate
 
-        return headerView;
-	}
-    
-    assert([item isKindOfClass:[JKConfiguration class]]);
-	
-	JKConfiguration *config = item;
-    assert(config.nibName);
-    
-    assert([outlineView registeredNibsByIdentifier][config.nibName]);
-    
-    MPPaletteViewController *vc = [self valueForKey:[self controllerKeyForPaletteNibName:config.nibName]];
-    assert(vc); // matching Nib & view controller name
-    assert(vc.inspectorController == self);
-    
-    // MUST set before packageController.
-    vc.inspectorOutlineView = outlineView;
-    config.itemController = vc;
-    
-    assert (!vc.configuration || vc.configuration == config);
-    
-    vc.configuration = item;
-    vc.configuration.modes = [item modes];
-    vc.configuration.mode = [vc defaultConfigurationMode];
-    assert(vc.configuration.mode);
-    
-    [self configurePaletteViewController:vc];
-    
-	NSTableCellView *view = (NSTableCellView *)vc.view;
-    
-    assert ([view isKindOfClass:[NSTableCellView class]] && [view class] != [NSTableCellView class]);
-    
-    return view;
-}
-
-- (void)configurePaletteViewController:(MPPaletteViewController *)vc
-{
-    // Overload in subclass.
-}
-
-- (CGFloat) outlineView:(NSOutlineView *)outlineView heightOfRowByItem:(id)item
-{
-	if ([self outlineView:outlineView isGroupItem:item])
-    {
-		return 15.f;
-	}
-	
-	JKConfiguration *config = item;
-	if (config.nibName)
-    {
-        CGFloat h = [config.modes[config.mode][@"height"] floatValue];
-        
-        NSLog(@"%@ %@:%@ = %f", config.nibName, config.mode, config.modes[config.mode], h);
-        
-        assert(h > 0);
-        return h;
-	}
-	
-	return 20.0f;
-}
-
-- (CGFloat)heightForPaletteViewController:(MPPaletteViewController *)paletteViewController
-{
-    NSNumber *h = paletteViewController.configuration.modes[paletteViewController.configuration.mode][@"height"];
-    assert(h);
-    return [h floatValue];
-}
-
-- (void)noteHeightOfPaletteViewControllerChanged:(MPPaletteViewController *)paletteViewController
-{
-    assert(paletteViewController.inspectorOutlineView);
-    NSInteger rowIndex = [paletteViewController.inspectorOutlineView rowForView:paletteViewController.view.superview];
-    
-    if (rowIndex < 0) return;
-    
-    assert(rowIndex >= 0);
-    [paletteViewController.inspectorOutlineView noteHeightOfRowsWithIndexesChanged:
-     [[NSIndexSet alloc] initWithIndex:rowIndex]];
-}
-
-- (NSTableRowView *) outlineView:(NSOutlineView *)outlineView rowViewForItem:(id)item
-{
-	if (![self outlineView:outlineView isGroupItem:item])
-    {
-        // FIXME: is non-group item suppsoed to have a JKConfiguration*Header*RowView
-        JKConfigurationHeaderRowView *rowView = [outlineView makeViewWithIdentifier:@"MPInspectorPaletteRowView" owner:nil];
-        if (!rowView) {
-            rowView = [[JKConfigurationHeaderRowView alloc] initWithFrame:CGRectZero];
-            rowView.identifier = @"MPInspectorPaletteRowView";
-        }
-	}
-	
-	JKConfigurationHeaderRowView *rowView = [outlineView makeViewWithIdentifier:@"MPInspectorPaletteHeaderRowView" owner:nil];
-	if (!rowView) {
-		rowView = [[JKConfigurationHeaderRowView alloc] initWithFrame:CGRectZero];
-		rowView.identifier = @"MPInspectorPaletteHeaderRowView";
-	}
-	
-	return rowView;
-}
+// we always assume a 1:1 relationship between a group row and palette, where each palette
+// has a header row. When the row content for the group row is requested we return the
+// palette's identifier. For the child of the group we simple return the palette controller
+// for that identifier.
 
 - (NSInteger)outlineView:(NSOutlineView *)outlineView numberOfChildrenOfItem:(id)item
-{
-    if (!outlineView.dataSource) return 0;
-    
+{    
     if (!item)
     {
-        NSArray *palettes = self.palettesForTabTitle[outlineView.identifier]; assert(palettes);
-        assert(palettes.count > 0);
-        return palettes.count;
+        return [self.paletteControllers[outlineView.identifier] count];
     }
     
-    if ([self outlineView:outlineView isGroupItem:item]) return 1;
+    if ([self outlineView:outlineView isGroupItem:item])
+    {
+        // we assume a 1:1 relationship between groups and palettes
+        return 1;
+    }
+    
     return 0;
 }
 
@@ -528,144 +323,112 @@
 {
     if (!item)
     {
-        NSArray *palettes = self.palettesForTabTitle[outlineView.identifier];
-        assert(palettes && palettes.count > index);
-        return palettes[index];
+        MPPaletteViewController *paletteController = self.paletteControllers[outlineView.identifier][index];
+        return paletteController.identifier;
     }
     
     if ([self outlineView:outlineView isGroupItem:item])
     {
-        assert([[item children] count] == 1 && index == 0);
-        JKConfigurationGroup *group = (JKConfigurationGroup *)item;
-        return group.children[index];
+        NSString *paletteIdentifier = (NSString *)item;
+        return [self paletteViewControllerForIdentifier:paletteIdentifier];
     }
     
-    assert([item children] == 0);
-    return 0;
+    return nil;
+}
+
+- (BOOL)outlineView:(NSOutlineView *)outlineView isGroupItem:(id)item
+{
+    return [item isKindOfClass:[NSString class]];
+}
+
+- (NSTableRowView *)outlineView:(NSOutlineView *)outlineView rowViewForItem:(id)item
+{
+	if ([self outlineView:outlineView isGroupItem:item])
+    {
+        JKConfigurationHeaderRowView *rowView = [outlineView makeViewWithIdentifier:@"MPGroupRowView" owner:nil];
+        if (!rowView)
+        {
+            rowView = [[JKConfigurationHeaderRowView alloc] initWithFrame:NSMakeRect(0.0, 0.0, 300.0, 33.0)];
+            rowView.identifier = @"MPGroupRowView";
+        }
+        return rowView;
+	}
+	
+	// otherwise get a regular rowview
+    return nil;
+}
+
+- (NSView *)outlineView:(NSOutlineView *)outlineView viewForTableColumn:(NSTableColumn *)tableColumn item:(id)item
+{
+    if ([self outlineView:outlineView isGroupItem:item])
+    {
+		JKConfigurationHeaderView *headerView = [outlineView makeViewWithIdentifier:@"MPGroupHeaderView" owner:self];
+        if (!headerView)
+        {
+            headerView = [[JKConfigurationHeaderView alloc] initWithFrame:NSMakeRect(0.0, 0.0, 300.0, 33.0)];
+            headerView.identifier = @"MPGroupHeaderView";
+        }
+
+        assert([headerView isKindOfClass:[JKConfigurationHeaderView class]]);
+        
+        NSString *paletteIdentifier = (NSString *)item;
+        MPPaletteViewController *paletteController = [self paletteViewControllerForIdentifier:paletteIdentifier];
+        headerView.labelTextField.stringValue = [paletteController title];
+
+        // FUTURE:give a chance to the palette controller to change the content of the headerview
+        // if ([paletteController respondsToSelector:(inspectorViewController:willDisplayHeaderView:)])
+        //  [paletteController inspectorViewController:self willDisplayHeaderView: headerView];
+        
+        return headerView;
+	}
+    
+    if ([item isKindOfClass:[MPPaletteViewController class]])
+    {
+        MPPaletteViewController *paletteController = (MPPaletteViewController *)item;
+
+        // TODO: set displayed items on row
+        
+        return paletteController.view;
+    }
+    
+    return nil;
+}
+
+- (CGFloat)outlineView:(NSOutlineView *)outlineView heightOfRowByItem:(id)item
+{
+	if ([self outlineView:outlineView isGroupItem:item])
+    {
+		return 33.f;
+	}
+    
+    if ([item isKindOfClass:[MPPaletteViewController class]])
+    {
+        MPPaletteViewController *paletteController = (MPPaletteViewController *)item;
+        return paletteController.height;
+    }
+    
+	return 0.0f;
 }
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView isItemExpandable:(id)item
 {
     return [self outlineView:outlineView isGroupItem:item];
 }
-*/
 
 
 #pragma mark -
-#pragma mark OutlineView Delegate
+#pragma mark MPPaletteViewControllerDelegate
 
-- (NSInteger)outlineView:(NSOutlineView *)outlineView numberOfChildrenOfItem:(id)item
+- (void)noteHeightOfPaletteViewControllerChanged:(MPPaletteViewController *)paletteViewController
 {
-    if (!outlineView.dataSource) return 0;
-    
-    if (!item)
+    // we simply iterate over each container for now
+    for (NSOutlineView *container in [self.paletteContainers allValues])
     {
-        NSString *identifier = [[self.tabView selectedTabViewItem] identifier];
-        return [self.paletteControllers[identifier] count];
+        NSInteger rowIndex = [container rowForView:paletteViewController.view];
+        if (rowIndex < 0) continue;
+        
+        [container noteHeightOfRowsWithIndexesChanged:[[NSIndexSet alloc] initWithIndex:rowIndex]];
     }
-    
-    //if ([self outlineView:outlineView isGroupItem:item]) return 1;
-    return 0;
 }
-
-- (id)outlineView:(NSOutlineView *)outlineView child:(NSInteger)index ofItem:(id)item
-{
-    if (!item)
-    {
-        NSString *identifier = [[self.tabView selectedTabViewItem] identifier];
-        return self.paletteControllers[identifier][index];
-    }
-    
-//    if ([self outlineView:outlineView isGroupItem:item])
-//    {
-//        assert([[item children] count] == 1 && index == 0);
-//        JKConfigurationGroup *group = (JKConfigurationGroup *)item;
-//        return group.children[index];
-//    }
-//    
-//    assert([item children] == 0);
-    return 0;
-}
-
-- (NSView *)outlineView:(NSOutlineView *)outlineView viewForTableColumn:(NSTableColumn *)tableColumn item:(id)item
-{
-    if ([item isKindOfClass:[MPPaletteViewController class]])
-    {
-        return [item valueForKey:@"view"];
-    }
-    
-    return nil;
-//    if ([self outlineView:outlineView isGroupItem:item])
-//    {
-//		JKConfigurationHeaderView *headerView
-//        = [outlineView makeViewWithIdentifier:@"MPInspectorPaletteHeaderView" owner:self];
-//        
-//        assert([headerView isKindOfClass:[JKConfigurationHeaderView class]]);
-//        headerView.textField.stringValue = [item title];
-//        
-//        // inverted
-//        headerView.headerGradientStartColor = [NSColor colorWithDeviceWhite:0.81 alpha:1.0];
-//        headerView.headerGradientEndColor = [NSColor colorWithDeviceWhite:0.91 alpha:1.0];
-//        
-//        return headerView;
-//	}
-//    
-//    assert([item isKindOfClass:[JKConfiguration class]]);
-//	
-//	JKConfiguration *config = item;
-//    assert(config.nibName);
-//    
-//    assert([outlineView registeredNibsByIdentifier][config.nibName]);
-//    
-//    MPPaletteViewController *vc = [self valueForKey:[self controllerKeyForPaletteNibName:config.nibName]];
-//    assert(vc); // matching Nib & view controller name
-//    assert(vc.inspectorController == self);
-//    
-//    // MUST set before packageController.
-//    vc.inspectorOutlineView = outlineView;
-//    config.itemController = vc;
-//    
-//    assert (!vc.configuration || vc.configuration == config);
-//    
-//    vc.configuration = item;
-//    vc.configuration.modes = [item modes];
-//    vc.configuration.mode = [vc defaultConfigurationMode];
-//    assert(vc.configuration.mode);
-//    
-//    [self configurePaletteViewController:vc];
-//    
-//	NSTableCellView *view = (NSTableCellView *)vc.view;
-//    
-//    assert ([view isKindOfClass:[NSTableCellView class]] && [view class] != [NSTableCellView class]);
-//    
-//    return view;
-}
-
-- (CGFloat)outlineView:(NSOutlineView *)outlineView heightOfRowByItem:(id)item
-{
-//	if ([self outlineView:outlineView isGroupItem:item])
-//    {
-//		return 15.f;
-//	}
-//	
-//	JKConfiguration *config = item;
-//	if (config.nibName)
-//    {
-//        CGFloat h = [config.modes[config.mode][@"height"] floatValue];
-//        
-//        NSLog(@"%@ %@:%@ = %f", config.nibName, config.mode, config.modes[config.mode], h);
-//        
-//        assert(h > 0);
-//        return h;
-//	}
-	
-	return 200.0f;
-}
-
-- (BOOL)outlineView:(NSOutlineView *)outlineView isItemExpandable:(id)item
-{
-    return NO;//[self outlineView:outlineView isGroupItem:item];
-}
-
 
 @end

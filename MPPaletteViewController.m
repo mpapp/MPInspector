@@ -16,17 +16,19 @@
 @implementation MPPaletteViewController
 
 @synthesize delegate = _delegate;
+@synthesize height = _height;
 
-- (instancetype)initWithDelegate:(id <MPPaletteViewControllerDelegate>)aDelegate
+- (instancetype)initWithDelegate:(id <MPPaletteViewControllerDelegate>)aDelegate identifier:(NSString *)identifier
 {
-    return [self initWithDelegate:aDelegate nibName:self.defaultNibName];
+    return [self initWithDelegate:aDelegate identifier:identifier nibName:self.defaultNibName];
 }
 
-- (instancetype)initWithDelegate:(id <MPPaletteViewControllerDelegate>)aDelegate nibName:(NSString *)aName
+- (instancetype)initWithDelegate:(id <MPPaletteViewControllerDelegate>)aDelegate identifier:(NSString *)identifier nibName:(NSString *)aName
 {
     if (self = [super initWithNibName:aName bundle:nil])
     {
         self.delegate = aDelegate;
+        self.identifier = identifier;
         self.configuration.mode = [self defaultConfigurationMode];
     }
     return self;
@@ -48,9 +50,34 @@
 	return (r.location != NSNotFound ? [className substringToIndex:r.location] : className);
 }
 
-
 #pragma mark -
-#pragma mark Configuration Modes
+#pragma mark Configuration
+
+// TODO: set configuration
+
+- (NSString *)title
+{
+    return @"Journal Article";
+}
+
+- (CGFloat)height
+{
+//    // if a modes dictionary is set, return the height from the currently selected mode
+//    if (_modes)
+//    {
+//        return [_modes[_mode][@"height"] floatValue];
+//    }
+    
+    return 200.f;//_height;
+}
+
+- (void)setHeight:(CGFloat)height
+{
+    _height = height;
+}
+
+
+
 
 - (void)setConfigurationMode:(NSString *)configurationMode
 {

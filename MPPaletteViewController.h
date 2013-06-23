@@ -11,11 +11,19 @@
 @class MPInspectorViewController, JKConfiguration;
 
 @interface MPPaletteViewController : PARViewController
-{
+{    
     __unsafe_unretained id <MPPaletteViewControllerDelegate> delegate;
 }
 
+@property (strong) NSString *identifier;
 @property (assign) id <MPPaletteViewControllerDelegate> delegate;
+
+@property (readonly) NSString *title;
+@property (assign) CGFloat height;
+
+// TODO: configuration
+// TODO: displayedItems
+
 @property (weak) JKConfiguration *configuration;
 
 @property (readonly) NSSet *allowedConfigurationModes;
@@ -24,8 +32,8 @@
 @property (readwrite, copy) NSString *configurationMode;
 - (void)setConfigurationMode:(NSString *)configurationMode animated:(BOOL)animated;
 
-- (instancetype)initWithDelegate:(id <MPPaletteViewControllerDelegate>)aDelegate;
-- (instancetype)initWithDelegate:(id <MPPaletteViewControllerDelegate>)aDelegate nibName:(NSString *)aName;
+- (instancetype)initWithDelegate:(id <MPPaletteViewControllerDelegate>)aDelegate identifier:(NSString *)identifier;
+- (instancetype)initWithDelegate:(id <MPPaletteViewControllerDelegate>)aDelegate identifier:(NSString *)identifier nibName:(NSString *)aName;
 
 @end
 
