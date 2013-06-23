@@ -7,8 +7,7 @@
 #import "MPPaletteViewController.h"
 #import "MPInspectorViewController.h"
 
-#import "JKConfiguration.h"
-
+    
 @interface MPPaletteViewController ()
 @property (readonly) NSString *defaultNibName;
 @end
@@ -29,7 +28,7 @@
     {
         self.delegate = aDelegate;
         self.identifier = identifier;
-        self.configuration.mode = [self defaultConfigurationMode];
+        self.mode = MPPaletteViewModeNormal;
     }
     return self;
 }
@@ -50,25 +49,51 @@
 	return (r.location != NSNotFound ? [className substringToIndex:r.location] : className);
 }
 
+
+#pragma mark -
+#pragma mark Refresh
+
+- (NSArray *)displayedItems
+{
+    if ([self.delegate respondsToSelector:@selector(displayedItemsForPaletteViewController:)])
+        return [self.delegate displayedItemsForPaletteViewController:self];
+        
+    return @[];
+}
+
+- (void)refresh
+{
+    [self refreshForced:NO];
+}
+
+- (void)refreshForced:(BOOL)forced
+{
+    // override in subclass and update view based on the displayedItems
+}
+
+
+
 #pragma mark -
 #pragma mark Configuration
 
-// TODO: set configuration
-
-- (NSString *)title
+- (NSString *)headerTitle
 {
+    // subclasses should override this method to provide a meaningful header title,
+    // which is shown in the outlineview header
     return @"Journal Article";
 }
 
 - (CGFloat)height
 {
-//    // if a modes dictionary is set, return the height from the currently selected mode
-//    if (_modes)
-//    {
-//        return [_modes[_mode][@"height"] floatValue];
-//    }
+    // subclasses can override this method to provide a different view height per mode
+    // by default we return the height of the view provided by the view controller 
     
-    return 200.f;//_height;
+    if (_height < 1.0)
+    {
+        return NSHeight(self.view.frame);
+    }
+    
+    return _height;
 }
 
 - (void)setHeight:(CGFloat)height
@@ -76,37 +101,14 @@
     _height = height;
 }
 
-
-
-
-- (void)setConfigurationMode:(NSString *)configurationMode
-{
-    [self setConfigurationMode:configurationMode animated:NO];
-}
-
-- (void)setConfigurationMode:(NSString *)configurationMode animated:(BOOL)animated
-{
-    assert([self.allowedConfigurationModes containsObject:configurationMode]);
+- (void)setMode:(MPPaletteViewMode)mode animated:(BOOL)animated;
+{    
+    if (self.mode == mode) return;
     
-    if ([self.configuration.mode isEqualToString:configurationMode]) return;
+    // subclasses can override setMode: to update or change the view layout 
+    self.mode = mode;
     
-    self.configuration.mode = configurationMode;
     [self.delegate noteHeightOfPaletteViewControllerChanged:self];
-}
-
-- (NSString *)configurationMode
-{
-    return _configuration.mode;
-}
-
-- (NSSet *)allowedConfigurationModes
-{
-    return [NSSet setWithArray:[_configuration.modes allKeys]];
-}
-
-- (NSString *)defaultConfigurationMode
-{
-    return @"normal";
 }
 
 @end

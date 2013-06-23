@@ -6,6 +6,12 @@
 
 #import "PARViewController.h"
 
+typedef NS_ENUM(NSInteger, MPPaletteViewMode)
+{
+	MPPaletteViewModeNormal = 0,
+    MPPaletteViewModeEdit   = 1
+};
+
 @protocol MPPaletteViewControllerDelegate;
 
 @class MPInspectorViewController, JKConfiguration;
@@ -18,26 +24,25 @@
 @property (strong) NSString *identifier;
 @property (assign) id <MPPaletteViewControllerDelegate> delegate;
 
-@property (readonly) NSString *title;
+@property (readonly) NSArray *displayedItems;
+@property (readonly) NSString *headerTitle;
+
 @property (assign) CGFloat height;
 
-// TODO: configuration
-// TODO: displayedItems
-
-@property (weak) JKConfiguration *configuration;
-
-@property (readonly) NSSet *allowedConfigurationModes;
-@property (readonly) NSString *defaultConfigurationMode;
-
-@property (readwrite, copy) NSString *configurationMode;
-- (void)setConfigurationMode:(NSString *)configurationMode animated:(BOOL)animated;
+@property (assign) MPPaletteViewMode mode;
+- (void)setMode:(MPPaletteViewMode)mode animated:(BOOL)animated;
 
 - (instancetype)initWithDelegate:(id <MPPaletteViewControllerDelegate>)aDelegate identifier:(NSString *)identifier;
 - (instancetype)initWithDelegate:(id <MPPaletteViewControllerDelegate>)aDelegate identifier:(NSString *)identifier nibName:(NSString *)aName;
 
+- (void)refresh;
+- (void)refreshForced:(BOOL)forced;
+
 @end
 
 @protocol MPPaletteViewControllerDelegate <NSObject>
+@required
+- (NSArray *)displayedItemsForPaletteViewController:(MPPaletteViewController *)paletteViewController;
 @optional
 - (void)noteHeightOfPaletteViewControllerChanged:(MPPaletteViewController *)paletteViewController;
 @end

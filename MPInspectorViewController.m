@@ -10,23 +10,16 @@
 #import "DMTabBar.h"
 #import "DMTabBarItem.h"
 
-#import "JKConfigurationHeaderRowView.h"
-#import "JKConfigurationHeaderView.h"
-#import "JKConfiguration.h"
-
-//#import "NSView+MPExtensions.h"
-//#import "RegexKitLite.h"
+#import "MPPaletteHeaderView.h"
+#import "MPPaletteHeaderRowView.h"
 
 #import "NSColor_Extensions.h"
 
 #import "MTInspectorOverviewSummaryController.h"
 
 @interface MPInspectorViewController ()
-{
 
-}
-
-@property (strong) NSDictionary *paletteConfigurations;
+// the configuration for the tabs and palettes is loaded from a json file
 @property (strong) NSDictionary *tabConfigurations;
 
 // outlineviews and arrays of palette controllers stored under the tab identifier
@@ -40,24 +33,6 @@
 - (void)setUpTabViewItem:(NSTabViewItem *)tabViewItem tabConfiguration:(NSDictionary *)tabConfiguration;
 
 - (NSOutlineView *)paletteContainerForTabViewItem:(NSTabViewItem *)tabViewItem;
-
-
-
-
-
-
-- (void)setUpTabViewForEntityType:(NSString *)entityType;
-- (void)setUpPalletesForTabWithIdentifier:(NSString *)tabIdentifier;
-
-
-
-
-
-@property (strong) NSMutableDictionary *configurationsByPaletteNibName;
-@property (strong) NSDictionary *palettesForTabTitle;
-
-- (void)setPaletteContainerWithKey:(NSString *)key;
-- (CGFloat)heightForPaletteViewController:(MPPaletteViewController *)paletteViewController;
 @end
 
 
@@ -99,7 +74,6 @@
     [super loadView];
     
     NSDictionary *dict = [self configurationDictionary];
-    self.paletteConfigurations = dict[@"palettes"];
     self.tabConfigurations = dict[@"tabs"];
     
     self.paletteContainers = [NSMutableDictionary dictionaryWithCapacity:[self.tabConfigurations count]];
@@ -112,6 +86,8 @@
 
 #pragma mark -
 #pragma mark EntityType
+
+// we can configure the tabs based on an entity type
 
 - (NSString *)entityType
 {
@@ -139,13 +115,19 @@
 {
     if (forced)
     {
-        [self setUpTabViewForEntityType:self.entityType];
+        [self setUpTabsForEntityType:self.entityType];
     }
     
     NSString *identifier = [[self.tabView selectedTabViewItem] identifier];
     [self.paletteContainers[identifier] reloadData];
 }
 
+- (NSArray *)displayedItems
+{
+    // override in subclass to provide the data to show
+    // in the actual inspector
+    return @[];
+}
 
 
 #pragma mark -
@@ -198,6 +180,7 @@
          if (itemSelectionType == DMTabBarItemSelectionType_WillSelect)
          {
              // FUTURE: send current tab palettes a will hide and new tab palettes a will show message
+             // that allows them to prepare or close down
              NSTabViewItem *tabViewItem = self.tabView.tabViewItems[targetTabBarItemIndex];
              [self.tabView selectTabViewItem:tabViewItem];
          }
@@ -287,7 +270,10 @@
         assert ([controllerClass isSubclassOfClass:[MPPaletteViewController class]]);
         
         paletteController = [(MPPaletteViewController *)[controllerClass alloc] initWithDelegate:self identifier:identifier];
-                             
+        
+        // make sure its view has been loaded
+        [paletteController view];
+        
         self.paletteControllersByIdentifier[identifier] = paletteController;
     }
     
@@ -345,11 +331,11 @@
 {
 	if ([self outlineView:outlineView isGroupItem:item])
     {
-        JKConfigurationHeaderRowView *rowView = [outlineView makeViewWithIdentifier:@"MPGroupRowView" owner:nil];
+        MPPaletteHeaderRowView *rowView = [outlineView makeViewWithIdentifier:@"MPaletteHeaderRowView" owner:nil];
         if (!rowView)
         {
-            rowView = [[JKConfigurationHeaderRowView alloc] initWithFrame:NSMakeRect(0.0, 0.0, 300.0, 33.0)];
-            rowView.identifier = @"MPGroupRowView";
+            rowView = [[MPPaletteHeaderRowView alloc] initWithFrame:NSMakeRect(0.0, 0.0, 300.0, 33.0)];
+            rowView.identifier = @"MPaletteHeaderRowView";
         }
         return rowView;
 	}
@@ -362,18 +348,19 @@
 {
     if ([self outlineView:outlineView isGroupItem:item])
     {
-		JKConfigurationHeaderView *headerView = [outlineView makeViewWithIdentifier:@"MPGroupHeaderView" owner:self];
+		MPPaletteHeaderView *headerView = [outlineView makeViewWithIdentifier:@"MPaletteHeaderView" owner:self];
         if (!headerView)
         {
-            headerView = [[JKConfigurationHeaderView alloc] initWithFrame:NSMakeRect(0.0, 0.0, 300.0, 33.0)];
-            headerView.identifier = @"MPGroupHeaderView";
+            
+            headerView = [[MPPaletteHeaderView alloc] initWithFrame:NSMakeRect(0.0, 0.0, 300.0, 33.0)];
+            headerView.identifier = @"MPaletteHeaderView";
         }
 
-        assert([headerView isKindOfClass:[JKConfigurationHeaderView class]]);
+        assert([headerView isKindOfClass:[MPPaletteHeaderView class]]);
         
         NSString *paletteIdentifier = (NSString *)item;
         MPPaletteViewController *paletteController = [self paletteViewControllerForIdentifier:paletteIdentifier];
-        headerView.labelTextField.stringValue = [paletteController title];
+        headerView.textField.stringValue = [paletteController headerTitle];
 
         // FUTURE:give a chance to the palette controller to change the content of the headerview
         // if ([paletteController respondsToSelector:(inspectorViewController:willDisplayHeaderView:)])
@@ -385,8 +372,7 @@
     if ([item isKindOfClass:[MPPaletteViewController class]])
     {
         MPPaletteViewController *paletteController = (MPPaletteViewController *)item;
-
-        // TODO: set displayed items on row
+        [paletteController refresh];
         
         return paletteController.view;
     }
@@ -418,6 +404,11 @@
 
 #pragma mark -
 #pragma mark MPPaletteViewControllerDelegate
+
+- (NSArray *)displayedItemsForPaletteViewController:(MPPaletteViewController *)paletteViewController
+{
+    return self.displayedItems;
+}
 
 - (void)noteHeightOfPaletteViewControllerChanged:(MPPaletteViewController *)paletteViewController
 {

@@ -19,6 +19,8 @@
 
 @property (strong) NSString *entityType;
 
+@property (readonly) NSArray *displayedItems;
+
 - (void)refresh;
 - (void)refreshForced:(BOOL)forced;
 
