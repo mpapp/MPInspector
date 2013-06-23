@@ -19,7 +19,7 @@
 
 @interface MPInspectorViewController ()
 
-// the configuration for the tabs and palettes is loaded from a json file
+// the configuration for the tabs is loaded from a json file
 @property (strong) NSDictionary *tabConfigurations;
 
 // outlineviews and arrays of palette controllers stored under the tab identifier
@@ -66,6 +66,9 @@
 
 - (NSString *)defaultEntityType
 {
+    // the set of tabs and their contents can be different for different
+    // entities being displayed, override this method to define which configuration
+    // to load by default
     return @"MTPublication";
 }
 
@@ -87,7 +90,8 @@
 #pragma mark -
 #pragma mark EntityType
 
-// we can configure the tabs based on an entity type
+// the set of tabs and their contents can be different for different
+// entities being displayed
 
 - (NSString *)entityType
 {
@@ -124,8 +128,7 @@
 
 - (NSArray *)displayedItems
 {
-    // override in subclass to provide the data to show
-    // in the actual inspector
+    // override in subclass to provide the data to show in the inspector
     return @[];
 }
 
