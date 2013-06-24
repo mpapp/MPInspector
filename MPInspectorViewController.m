@@ -337,6 +337,8 @@
         MPPaletteHeaderRowView *rowView = [outlineView makeViewWithIdentifier:@"MPaletteHeaderRowView" owner:nil];
         if (!rowView)
         {
+            // do not init with zero rect frame or autoresizing of the subviews will not happen correctly
+            // instead we init with a more realistic frame size (doesn't need to be accurate)
             rowView = [[MPPaletteHeaderRowView alloc] initWithFrame:NSMakeRect(0.0, 0.0, 300.0, 33.0)];
             rowView.identifier = @"MPaletteHeaderRowView";
         }
@@ -354,7 +356,8 @@
 		MPPaletteHeaderView *headerView = [outlineView makeViewWithIdentifier:@"MPaletteHeaderView" owner:self];
         if (!headerView)
         {
-            
+            // do not init with zero rect frame or autoresizing of the subviews will not happen correctly
+            // instead we init with a more realistic frame size (doesn't need to be accurate)
             headerView = [[MPPaletteHeaderView alloc] initWithFrame:NSMakeRect(0.0, 0.0, 300.0, 33.0)];
             headerView.identifier = @"MPaletteHeaderView";
         }
