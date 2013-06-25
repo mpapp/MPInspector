@@ -122,6 +122,9 @@
         [self setUpTabsForEntityType:self.entityType];
     }
     
+    for (MPPaletteViewController *paletteController in [self.paletteControllersByIdentifier allValues])
+        [paletteController refreshForced:forced];
+    
     NSString *identifier = [[self.tabView selectedTabViewItem] identifier];
     [self.paletteContainers[identifier] reloadData];
 }
@@ -377,9 +380,7 @@
     
     if ([item isKindOfClass:[MPPaletteViewController class]])
     {
-        MPPaletteViewController *paletteController = (MPPaletteViewController *)item;
-        [paletteController refresh];
-        
+        MPPaletteViewController *paletteController = (MPPaletteViewController *)item;        
         return paletteController.view;
     }
     

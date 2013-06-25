@@ -22,7 +22,7 @@
     {
         // add the header label
         NSTextField *textField = [[MTShadowTextField alloc] initWithFrame:self.bounds];
-        textField.frame = NSMakeRect(13.0, 8.0, 200.0, 17.0);
+        textField.frame = NSMakeRect(11.0, 8.0, 200.0, 17.0);
         textField.textColor = [NSColor colorWithCalibratedWhite:0.55 alpha:1.0];
         textField.font = [NSFont systemFontOfSize:12.0];
         textField.drawsBackground = NO;

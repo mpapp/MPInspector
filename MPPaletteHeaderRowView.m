@@ -54,14 +54,6 @@
     }
 }
 
-- (void)setFrame:(NSRect)frameRect
-{
-    [super setFrame:frameRect];
-    
-    // bit of a nasty trick to hide the disclosure button
-    self.disclosureButton.hidden = YES;
-}
-
 - (NSButton *)disclosureButton
 {
 	NSButton *disclosureButton = nil;
@@ -151,6 +143,9 @@
 
 - (void)drawRect:(NSRect)dirtyRect
 {
+    // hide our disclosure button
+    self.disclosureButton.hidden = YES;
+
     // draw our favorite background color
     [[NSColor viewForegroundColor] set];
     NSRectFill(dirtyRect);
