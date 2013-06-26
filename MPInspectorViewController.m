@@ -402,7 +402,7 @@
         MPPaletteViewController *paletteController = [self paletteViewControllerForIdentifier:paletteIdentifier];
 
         if (!paletteController.shouldDisplayPalette)
-            return 1.0;
+            return 1.0; // NSTableView requires a minimum height > 0.0
 
 		return 33.f;
 	}
@@ -410,9 +410,9 @@
     if ([item isKindOfClass:[MPPaletteViewController class]])
     {
         MPPaletteViewController *paletteController = (MPPaletteViewController *)item;
-        
+    
         if (!paletteController.shouldDisplayPalette)
-            return 1.0;
+            return 1.0; 
 
         return paletteController.height;
     }
