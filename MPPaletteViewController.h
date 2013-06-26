@@ -8,8 +8,9 @@
 
 typedef NS_ENUM(NSInteger, MPPaletteViewMode)
 {
-	MPPaletteViewModeNormal = 0,
-    MPPaletteViewModeEdit   = 1
+	MPPaletteViewModeNormal   = 0,
+    MPPaletteViewModeEdit     = 1,
+    MPPaletteViewModeExpanded = 2
 };
 
 @protocol MPPaletteViewControllerDelegate;
