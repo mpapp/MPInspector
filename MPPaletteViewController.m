@@ -78,6 +78,13 @@
     // override in subclass and update view layout based on the displayedItems
 }
 
+- (BOOL)shouldDisplayPalette
+{
+    // give the opportunity to subclasses to make clear that displaying the
+    // palette with the current displayed items does not make sense
+    return YES;
+}
+
 
 #pragma mark -
 #pragma mark Configuration

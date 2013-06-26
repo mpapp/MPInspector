@@ -375,12 +375,19 @@
         // if ([paletteController respondsToSelector:(inspectorViewController:willDisplayHeaderView:)])
         //  [paletteController inspectorViewController:self willDisplayHeaderView: headerView];
         
+        if (!paletteController.shouldDisplayPalette)
+            return nil;
+        
         return headerView;
 	}
     
     if ([item isKindOfClass:[MPPaletteViewController class]])
     {
-        MPPaletteViewController *paletteController = (MPPaletteViewController *)item;        
+        MPPaletteViewController *paletteController = (MPPaletteViewController *)item;
+        
+        if (!paletteController.shouldDisplayPalette)
+            return nil;
+        
         return paletteController.view;
     }
     
@@ -391,12 +398,22 @@
 {
 	if ([self outlineView:outlineView isGroupItem:item])
     {
+        NSString *paletteIdentifier = (NSString *)item;
+        MPPaletteViewController *paletteController = [self paletteViewControllerForIdentifier:paletteIdentifier];
+
+        if (!paletteController.shouldDisplayPalette)
+            return 1.0;
+
 		return 33.f;
 	}
     
     if ([item isKindOfClass:[MPPaletteViewController class]])
     {
         MPPaletteViewController *paletteController = (MPPaletteViewController *)item;
+        
+        if (!paletteController.shouldDisplayPalette)
+            return 1.0;
+
         return paletteController.height;
     }
     

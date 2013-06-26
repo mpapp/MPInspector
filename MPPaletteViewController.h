@@ -26,6 +26,7 @@ typedef NS_ENUM(NSInteger, MPPaletteViewMode)
 
 @property (readonly) NSArray *displayedItems;
 @property (readonly) NSString *headerTitle;
+@property (readonly) BOOL shouldDisplayPalette;
 
 @property (assign) CGFloat height;
 
