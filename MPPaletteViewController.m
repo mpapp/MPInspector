@@ -7,6 +7,8 @@
 #import "MPPaletteViewController.h"
 #import "MPInspectorViewController.h"
 
+#import "Mixin.h"
+#import "MTRefreshable.h"
     
 @interface MPPaletteViewController ()
 @property (readonly) NSString *defaultNibName;
@@ -39,6 +41,12 @@
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
++ (void)initialize
+{
+	[Mixin from:[MTRefreshableImpl class] into:[MPPaletteViewController class]];
+}
+
+
 - (NSString *)defaultNibName
 {
     // by default use the class name but strip the Controller part
@@ -59,6 +67,11 @@
         return [self.delegate displayedItemsForPaletteViewController:self];
         
     return @[];
+}
+
+-(void)onRefresh
+{
+	[self refresh];
 }
 
 - (void)refresh

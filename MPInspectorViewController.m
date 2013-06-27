@@ -16,6 +16,8 @@
 #import "NSColor_Extensions.h"
 
 #import "MTInspectorOverviewSummaryController.h"
+#import "Mixin.h"
+#import "MTRefreshable.h"
 
 @interface MPInspectorViewController ()
 
@@ -40,6 +42,12 @@
 @implementation MPInspectorViewController
 
 @synthesize entityType = _entityType;
+
++ (void)initialize
+{
+	[Mixin from:[MTRefreshableImpl class] into:[MPInspectorViewController class]];
+}
+
 
 - (NSString *)configurationFilename
 {
@@ -109,6 +117,13 @@
 
 #pragma mark -
 #pragma mark Refresh
+
+
+-(void)onRefresh
+{
+	[self refresh];
+}
+
 
 - (void)refresh
 {
