@@ -449,7 +449,7 @@
     return self.displayedItems;
 }
 
-- (void)noteHeightOfPaletteViewControllerChanged:(MPPaletteViewController *)paletteViewController
+- (void)noteHeightOfPaletteViewControllerChanged:(MPPaletteViewController *)paletteViewController animate:(BOOL)animate
 {
     // we simply iterate over each container for now
     for (NSOutlineView *container in [self.paletteContainers allValues])
@@ -457,7 +457,20 @@
         NSInteger rowIndex = [container rowForView:paletteViewController.view];
         if (rowIndex < 0) continue;
         
-        [container noteHeightOfRowsWithIndexesChanged:[[NSIndexSet alloc] initWithIndex:rowIndex]];
+        NSIndexSet *indexSet = [[NSIndexSet alloc] initWithIndex:rowIndex];
+        if (!animate)
+        {
+            [NSAnimationContext beginGrouping];
+            {
+                [[NSAnimationContext currentContext] setDuration:0];
+                [container noteHeightOfRowsWithIndexesChanged:indexSet];
+            }
+            [NSAnimationContext endGrouping];
+        }
+        else
+        {
+            [container noteHeightOfRowsWithIndexesChanged:indexSet];
+        }
     }
 }
 

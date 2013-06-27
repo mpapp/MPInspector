@@ -32,7 +32,7 @@ typedef NS_ENUM(NSInteger, MPPaletteViewMode)
 @property (assign) CGFloat height;
 
 @property (assign) MPPaletteViewMode mode;
-- (void)setMode:(MPPaletteViewMode)mode animated:(BOOL)animated;
+- (void)setMode:(MPPaletteViewMode)mode animate:(BOOL)animate;
 
 - (instancetype)initWithDelegate:(id <MPPaletteViewControllerDelegate>)aDelegate identifier:(NSString *)identifier;
 - (instancetype)initWithDelegate:(id <MPPaletteViewControllerDelegate>)aDelegate identifier:(NSString *)identifier nibName:(NSString *)aName;
@@ -47,5 +47,5 @@ typedef NS_ENUM(NSInteger, MPPaletteViewMode)
 @required
 - (NSArray *)displayedItemsForPaletteViewController:(MPPaletteViewController *)paletteViewController;
 @optional
-- (void)noteHeightOfPaletteViewControllerChanged:(MPPaletteViewController *)paletteViewController;
+- (void)noteHeightOfPaletteViewControllerChanged:(MPPaletteViewController *)paletteViewController animate:(BOOL)animate;
 @end

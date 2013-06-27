@@ -127,14 +127,14 @@
     _height = height;
 }
 
-- (void)setMode:(MPPaletteViewMode)mode animated:(BOOL)animated;
+- (void)setMode:(MPPaletteViewMode)mode animate:(BOOL)animate;
 {    
     if (self.mode == mode) return;
     
     // subclasses can override setMode: to update or change the view layout 
     self.mode = mode;
     
-    [self.delegate noteHeightOfPaletteViewControllerChanged:self];
+    [self.delegate noteHeightOfPaletteViewControllerChanged:self animate:animate];
 }
 
 @end
