@@ -7,7 +7,6 @@
 #import "MPPaletteViewController.h"
 #import "MPInspectorViewController.h"
 
-#import "Mixin.h"
 #import "MTRefreshable.h"
     
 @interface MPPaletteViewController ()
@@ -39,11 +38,6 @@
 {
     _delegate = nil;
     [[NSNotificationCenter defaultCenter] removeObserver:self];
-}
-
-+ (void)initialize
-{
-	[Mixin from:[MTRefreshableImpl class] into:[MPPaletteViewController class]];
 }
 
 
