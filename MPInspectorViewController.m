@@ -49,8 +49,7 @@
 - (NSDictionary *)configurationDictionary
 {
     NSURL *paletteConfigURL = [[NSBundle mainBundle] URLForResource:self.configurationFilename
-                                                      withExtension:@"json"
-                                                       subdirectory:@"Configuration"];
+                                                      withExtension:@"json"];
     
     NSData *data = [[NSData alloc] initWithContentsOfURL:paletteConfigURL];
     NSError *err = nil;
