@@ -16,7 +16,6 @@
 #import "NSColor_Extensions.h"
 
 #import "MTInspectorOverviewSummaryController.h"
-#import "MTRefreshable.h"
 
 @interface MPInspectorViewController ()
 
@@ -109,13 +108,6 @@
 
 #pragma mark -
 #pragma mark Refresh
-
-
--(void)onRefresh
-{
-	[self refresh];
-}
-
 
 - (void)refresh
 {
