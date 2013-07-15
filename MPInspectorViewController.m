@@ -13,6 +13,7 @@
 #import "MPPaletteHeaderView.h"
 #import "MPPaletteHeaderRowView.h"
 
+#import "NSBundle_Extensions.h"
 #import "NSColor_Extensions.h"
 
 #import "MTInspectorOverviewSummaryController.h"
@@ -48,8 +49,10 @@
 
 - (NSDictionary *)configurationDictionary
 {
-    NSURL *paletteConfigURL = [[NSBundle mainBundle] URLForResource:self.configurationFilename
-                                                      withExtension:@"json"];
+    NSURL *paletteConfigURL = [[NSBundle resourcesBundle] URLForResource:self.configurationFilename
+                                                           withExtension:@"json"
+                                                            subdirectory:@"Configuration"];
+    assert(paletteConfigURL);
     
     NSData *data = [[NSData alloc] initWithContentsOfURL:paletteConfigURL];
     NSError *err = nil;
