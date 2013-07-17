@@ -59,7 +59,7 @@
     NSDictionary *dict = [NSJSONSerialization JSONObjectWithData:data options:0 error:&err];
     if (!dict)
     {
-        NSLog(@"Failed to load pallete configuration from JSON file at %@ (%@)", paletteConfigURL, err);
+        NSLog(@"Failed to load palette configuration from JSON file at %@ (%@)", paletteConfigURL, err);
     }
     
     assert(dict);
