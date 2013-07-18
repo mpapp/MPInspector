@@ -74,9 +74,18 @@
     return @"MTPublication";
 }
 
-- (void)loadView
+- (void)awakeFromNib
 {
-    [super loadView];
+    [self loadConfiguration];
+}
+
+- (void)loadConfiguration
+{
+    // make sure we have the outlets to tabBar and tabView set up
+    // if our nib doesn't contain them we might need to call
+    // setupConfiguration again after having set the tabBar and tabView
+    if (!self.tabBar || !self.tabView)
+        return;
     
     NSDictionary *dict = [self configurationDictionary];
     self.tabConfigurations = dict[@"tabs"];

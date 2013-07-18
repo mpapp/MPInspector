@@ -21,6 +21,7 @@
 
 @property (readonly) NSArray *displayedItems;
 
+- (void)loadConfiguration;
 - (void)refresh;
 - (void)refreshForced:(BOOL)forced;
 
