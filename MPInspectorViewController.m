@@ -312,6 +312,7 @@
         selectedTabIndex = [self.tabView numberOfTabViewItems] - 1;
         
     [self.tabView selectTabViewItemAtIndex:selectedTabIndex];
+    [self.tabBar setSelectedIndex:selectedTabIndex];
 }
 
 - (NSString *)selectedTabIdentifier
@@ -322,6 +323,7 @@
 - (void)setSelectedTabIdentifier:(NSString *)selectedTabIdentifier
 {
     [self.tabView selectTabViewItemWithIdentifier:selectedTabIdentifier];
+    [self.tabBar setSelectedIndex:self.selectedTabIndex];
 }
 
 - (IBAction)selectNextInspectorTab:(id)sender
