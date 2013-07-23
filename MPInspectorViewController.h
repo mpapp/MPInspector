@@ -21,8 +21,15 @@
 
 @property (readonly) NSArray *displayedItems;
 
+@property (readwrite) NSInteger selectedTabIndex;
+@property (readwrite) NSString *selectedTabIdentifier;
+           
 - (void)loadConfiguration;
 - (void)refresh;
 - (void)refreshForced:(BOOL)forced;
+
+- (IBAction)selectNextInspectorTab:(id)sender;
+- (IBAction)selectPreviousInspectorTab:(id)sender;
+- (IBAction)selectFirstInspectorTab:(id)sender;
 
 @end
