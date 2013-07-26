@@ -26,3 +26,7 @@
 - (void)refreshForced:(BOOL)forced;
 
 @end
+
+
+@interface MTDebugRowView : NSTableRowView
+@end

@@ -5,6 +5,7 @@
 //  Copyright (c) 2012 Manuscripts.app Limited. All rights reserved.
 
 #import "MPInspectorViewController.h"
+#import "MTInspectorOverviewOrganizationController.h"
 #import "MPPaletteViewController.h"
 
 #import "DMTabBar.h"
@@ -39,6 +40,9 @@
 
 
 @implementation MPInspectorViewController
+{
+    BOOL _awake;
+}
 
 @synthesize entityType = _entityType;
 
@@ -76,6 +80,11 @@
 
 - (void)awakeFromNib
 {
+    [super awakeFromNib];
+    
+    if (_awake) return;
+    _awake = YES;
+    
     [self loadConfiguration];
 }
 
@@ -238,23 +247,18 @@
 {
     // set up a new outline view as the palette container
     NSOutlineView *paletteContainer = [[NSOutlineView alloc] initWithFrame:self.view.bounds];
+    paletteContainer.autoresizesSubviews = YES;
+    paletteContainer.autosaveTableColumns = NO;
+    paletteContainer.autoresizingMask = (NSViewWidthSizable | NSViewHeightSizable);
+    paletteContainer.headerView = nil;
+    paletteContainer.identifier = tabViewItem.identifier;
     paletteContainer.indentationMarkerFollowsCell = NO;
     paletteContainer.indentationPerLevel = 0;
     paletteContainer.backgroundColor = [NSColor viewForegroundColor];
     paletteContainer.gridStyleMask = NSTableViewGridNone;
     paletteContainer.focusRingType = NSFocusRingTypeNone;
     paletteContainer.selectionHighlightStyle = NSTableViewSelectionHighlightStyleNone;
-    paletteContainer.autosaveTableColumns = NO;
-    paletteContainer.autoresizingMask = (NSViewWidthSizable | NSViewHeightSizable);
-    paletteContainer.translatesAutoresizingMaskIntoConstraints = NO;
-
-    // set the identifier to be that of the tab (same as tabviewitem)
-    paletteContainer.identifier = tabViewItem.identifier;
-    
-    // add a tablecolumn
-    NSTableColumn *tableColumn = [[NSTableColumn alloc] initWithIdentifier:@"MPInspectorColumn"];
-    [tableColumn setEditable: NO];
-    [paletteContainer addTableColumn:tableColumn];
+    paletteContainer.translatesAutoresizingMaskIntoConstraints = YES;
     
     // embed the outlineview in a scrollview
     NSScrollView *scrollView = [[NSScrollView alloc] initWithFrame:CGRectZero];
@@ -262,12 +266,18 @@
     scrollView.drawsBackground = YES;
     scrollView.backgroundColor = [NSColor viewBackgroundColor];
     scrollView.autoresizingMask = (NSViewWidthSizable | NSViewHeightSizable);
-
-    [paletteContainer setHeaderView:nil];
+    scrollView.autoresizesSubviews = YES;
+    scrollView.translatesAutoresizingMaskIntoConstraints = YES;
     
+    // add a tablecolumn
+    NSTableColumn *tableColumn = [[NSTableColumn alloc] initWithIdentifier:@"MPInspectorColumn"];
+    tableColumn.resizingMask = NSTableColumnAutoresizingMask;
+    tableColumn.editable = NO;
+    [paletteContainer addTableColumn:tableColumn];
+
     // set the scrollview as the view for the tabviewitem
     tabViewItem.view = scrollView;
-    
+
     assert(paletteContainer);
     return paletteContainer;
 }
@@ -358,9 +368,12 @@
         }
         return rowView;
 	}
-	
-	// otherwise get a regular rowview
-    return nil;
+
+    MTDebugRowView *rv = [[MTDebugRowView alloc] init];
+    rv.identifier = @"DebugRow";
+    return rv;
+
+    //return nil;
 }
 
 - (NSView *)outlineView:(NSOutlineView *)outlineView viewForTableColumn:(NSTableColumn *)tableColumn item:(id)item
@@ -425,6 +438,9 @@
         if (!paletteController.shouldDisplayPalette)
             return 1.0; 
 
+        NSLog(@"Will apply palette controller height %f for %@", paletteController.height, paletteController);
+        NSLog(@"Is expanded: %hhi,%hhi", [outlineView isItemExpanded:item], [outlineView isItemExpanded:[outlineView parentForItem:item]]);
+        
         return paletteController.height;
     }
     
@@ -447,6 +463,8 @@
 
 - (void)noteHeightOfPaletteViewControllerChanged:(MPPaletteViewController *)paletteViewController animate:(BOOL)animate
 {
+    NSLog(@"Height of %@ changed", paletteViewController);
+    
     // we simply iterate over each container for now
     for (NSOutlineView *container in [self.paletteContainers allValues])
     {
@@ -456,12 +474,19 @@
         NSIndexSet *indexSet = [[NSIndexSet alloc] initWithIndex:rowIndex];
         if (!animate)
         {
-            [NSAnimationContext beginGrouping];
+            [NSAnimationContext runAnimationGroup:^(NSAnimationContext *context) {
+                [[NSAnimationContext currentContext] setDuration:0];
+                [container noteHeightOfRowsWithIndexesChanged:indexSet];
+            } completionHandler:^{
+                // Nothing to do
+            }];
+            
+            /*[NSAnimationContext beginGrouping];
             {
                 [[NSAnimationContext currentContext] setDuration:0];
                 [container noteHeightOfRowsWithIndexesChanged:indexSet];
             }
-            [NSAnimationContext endGrouping];
+            [NSAnimationContext endGrouping];*/
         }
         else
         {
@@ -469,5 +494,117 @@
         }
     }
 }
+
+@end
+
+
+@implementation MTDebugRowView
+
+/*+ (BOOL)requiresConstraintBasedLayout
+{
+    return YES;
+}*/
+
+/*- (id)initWithCoder:(NSCoder *)coder
+{
+    self = [super initWithCoder:coder];
+    if (!self) return nil;
+    
+    self.autoresizingMask = 0;
+    self.autoresizesSubviews = NO;
+    self.translatesAutoresizingMaskIntoConstraints = NO;
+    
+    return self;
+}*/
+
+/*- (id)initWithFrame:(NSRect)frameRect
+{
+    self = [super initWithFrame:frameRect];
+    if (!self) return nil;
+    
+    self.autoresizingMask = 0;
+    self.autoresizesSubviews = NO;
+    self.translatesAutoresizingMaskIntoConstraints = NO;
+    
+    return self;
+}
+
+- (void)drawRect:(NSRect)dirtyRect
+{
+    [NSColor.blueColor set];
+    [NSBezierPath fillRect:self.bounds];
+    [super drawRect:dirtyRect];
+}*/
+
+
+/*- (void)syncCellViewFrame
+{
+    if (self.numberOfColumns < 1)
+        return;
+    if (!self.superview)
+        return;
+    
+    id cellView = [self viewAtColumn:0];
+    NSLog(@"Cell view is %@, with subviews: %@", cellView, self.subviews);
+    
+    if (cellView)
+    {
+        NSRect frame = self.frame;
+        NSEdgeInsets insets = [self alignmentRectInsets];
+        NSRect cellFrame = NSMakeRect(insets.left, insets.top, frame.size.width - insets.left - insets.right, frame.size.height - insets.top - insets.bottom);
+        [cellView setFrame:cellFrame];
+        
+        [self setNeedsLayout:YES];
+        [self setNeedsUpdateConstraints:YES];
+        [self setNeedsDisplay:YES];
+        
+        NSLog(@"For row frame %@, set cell frame to %@", NSStringFromRect(frame), NSStringFromRect(cellFrame));
+    }
+}
+
+- (BOOL)shouldIgnoreFrameChange:(NSRect)frame
+{
+    BOOL b = ((self.superview && self.superview.superview) && ((frame.size.height == 0.0) || (frame.size.width == 0.0)));
+    
+    if (b)
+    {
+        NSLog(@"Ignoring zero row view dimensions");
+        MTLogCaller(0);
+    }
+    
+    return b;
+}
+
+- (void)setFrame:(NSRect)frame
+{
+    if ([self shouldIgnoreFrameChange:frame]) return;
+    
+    [super setFrame:frame];
+    NSLog(@">>> Row view %@ frame set to %@, in superview %@, superframe %@", self, NSStringFromRect(self.frame), self.superview, NSStringFromRect(self.superview.frame));
+    
+    [self syncCellViewFrame];
+}*/
+
+/*- (void)viewDidMoveToSuperview
+{
+    [super viewDidMoveToSuperview];
+    NSLog(@">>> Row view %@ was moved with frame %@, to superview %@ superframe %@", self, NSStringFromRect(self.frame), self.superview, NSStringFromRect(self.superview.frame));
+    
+    if (![self shouldIgnoreFrameChange:self.frame])
+    {
+        [self syncCellViewFrame];
+    }
+    
+    NSMutableArray *views = [NSMutableArray array];
+    NSView *v = self;
+    
+    while (v)
+    {
+        [views addObject:v];
+        v = v.superview;
+    }
+    
+    NSLog(@"View hierarchy is:\n%@", views);
+}*/
 
 @end
