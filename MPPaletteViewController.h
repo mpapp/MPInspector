@@ -49,10 +49,3 @@ typedef NS_ENUM(NSInteger, MPPaletteViewMode)
 @optional
 - (void)noteHeightOfPaletteViewControllerChanged:(MPPaletteViewController *)paletteViewController animate:(BOOL)animate;
 @end
-
-
-#define MTLogCaller(maxLines)\
-NSArray *allSymbols = [NSThread callStackSymbols], *symbols;\
-if (maxLines > 0) symbols = [allSymbols subarrayWithRange:NSMakeRange(0, MIN((allSymbols.count), maxLines))];\
-else symbols = [allSymbols subarrayWithRange:NSMakeRange(0, allSymbols.count)];\
-NSLog(@"Current call stack:\n%@", [symbols componentsJoinedByString:@"\n"]);

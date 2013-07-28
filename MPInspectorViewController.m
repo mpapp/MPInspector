@@ -309,6 +309,56 @@
 
 
 #pragma mark -
+#pragma mark Tab Navigation
+
+- (NSInteger)selectedTabIndex
+{
+    return [self.tabView indexOfTabViewItem:[self.tabView selectedTabViewItem]];
+}
+
+- (void)setSelectedTabIndex:(NSInteger)selectedTabIndex
+{
+    if (selectedTabIndex >= [self.tabView numberOfTabViewItems])
+        selectedTabIndex = [self.tabView numberOfTabViewItems] - 1;
+        
+    [self.tabView selectTabViewItemAtIndex:selectedTabIndex];
+    [self.tabBar setSelectedIndex:selectedTabIndex];
+}
+
+- (NSString *)selectedTabIdentifier
+{
+    return [self.tabView.selectedTabViewItem identifier];
+}
+
+- (void)setSelectedTabIdentifier:(NSString *)selectedTabIdentifier
+{
+    [self.tabView selectTabViewItemWithIdentifier:selectedTabIdentifier];
+    [self.tabBar setSelectedIndex:self.selectedTabIndex];
+}
+
+- (IBAction)selectNextInspectorTab:(id)sender
+{
+    NSInteger idx = self.selectedTabIndex;
+    if (idx == NSNotFound) return;
+    
+    self.selectedTabIndex = ++idx;
+}
+
+- (IBAction)selectPreviousInspectorTab:(id)sender
+{
+    NSInteger idx = self.selectedTabIndex;
+    if (idx == NSNotFound) return;
+    
+    self.selectedTabIndex = MAX(--idx, 0);
+}
+
+- (IBAction)selectFirstInspectorTab:(id)sender
+{
+    [self.tabView selectFirstTabViewItem:sender];
+}
+
+
+#pragma mark -
 #pragma mark OutlineView Delegate
 
 // we always assume a 1:1 relationship between a group row and palette, where each palette
