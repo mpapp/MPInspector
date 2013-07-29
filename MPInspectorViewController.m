@@ -5,6 +5,7 @@
 //  Copyright (c) 2012 Manuscripts.app Limited. All rights reserved.
 
 #import "MPInspectorViewController.h"
+#import "MTInspectorOverviewOrganizationController.h"
 #import "MPPaletteViewController.h"
 
 #import "DMTabBar.h"
@@ -39,6 +40,9 @@
 
 
 @implementation MPInspectorViewController
+{
+    BOOL _awake;
+}
 
 @synthesize entityType = _entityType;
 
@@ -76,6 +80,11 @@
 
 - (void)awakeFromNib
 {
+    [super awakeFromNib];
+    
+    if (_awake) return;
+    _awake = YES;
+    
     [self loadConfiguration];
 }
 
@@ -238,23 +247,18 @@
 {
     // set up a new outline view as the palette container
     NSOutlineView *paletteContainer = [[NSOutlineView alloc] initWithFrame:self.view.bounds];
+    paletteContainer.autoresizesSubviews = YES;
+    paletteContainer.autosaveTableColumns = NO;
+    paletteContainer.autoresizingMask = (NSViewWidthSizable | NSViewHeightSizable);
+    paletteContainer.headerView = nil;
+    paletteContainer.identifier = tabViewItem.identifier;
     paletteContainer.indentationMarkerFollowsCell = NO;
     paletteContainer.indentationPerLevel = 0;
     paletteContainer.backgroundColor = [NSColor viewForegroundColor];
     paletteContainer.gridStyleMask = NSTableViewGridNone;
     paletteContainer.focusRingType = NSFocusRingTypeNone;
     paletteContainer.selectionHighlightStyle = NSTableViewSelectionHighlightStyleNone;
-    paletteContainer.autosaveTableColumns = NO;
-    paletteContainer.autoresizingMask = (NSViewWidthSizable | NSViewHeightSizable);
-    paletteContainer.translatesAutoresizingMaskIntoConstraints = NO;
-
-    // set the identifier to be that of the tab (same as tabviewitem)
-    paletteContainer.identifier = tabViewItem.identifier;
-    
-    // add a tablecolumn
-    NSTableColumn *tableColumn = [[NSTableColumn alloc] initWithIdentifier:@"MPInspectorColumn"];
-    [tableColumn setEditable: NO];
-    [paletteContainer addTableColumn:tableColumn];
+    paletteContainer.translatesAutoresizingMaskIntoConstraints = YES;
     
     // embed the outlineview in a scrollview
     NSScrollView *scrollView = [[NSScrollView alloc] initWithFrame:CGRectZero];
@@ -262,12 +266,18 @@
     scrollView.drawsBackground = YES;
     scrollView.backgroundColor = [NSColor viewBackgroundColor];
     scrollView.autoresizingMask = (NSViewWidthSizable | NSViewHeightSizable);
-
-    [paletteContainer setHeaderView:nil];
+    scrollView.autoresizesSubviews = YES;
+    scrollView.translatesAutoresizingMaskIntoConstraints = YES;
     
+    // add a tablecolumn
+    NSTableColumn *tableColumn = [[NSTableColumn alloc] initWithIdentifier:@"MPInspectorColumn"];
+    tableColumn.resizingMask = NSTableColumnAutoresizingMask;
+    tableColumn.editable = NO;
+    [paletteContainer addTableColumn:tableColumn];
+
     // set the scrollview as the view for the tabviewitem
     tabViewItem.view = scrollView;
-    
+
     assert(paletteContainer);
     return paletteContainer;
 }
@@ -408,8 +418,7 @@
         }
         return rowView;
 	}
-	
-	// otherwise get a regular rowview
+
     return nil;
 }
 
@@ -475,6 +484,9 @@
         if (!paletteController.shouldDisplayPalette)
             return 1.0; 
 
+        NSLog(@"Will apply palette controller height %f for %@", paletteController.height, paletteController);
+        NSLog(@"Is expanded: %hhi,%hhi", [outlineView isItemExpanded:item], [outlineView isItemExpanded:[outlineView parentForItem:item]]);
+        
         return paletteController.height;
     }
     
@@ -497,6 +509,8 @@
 
 - (void)noteHeightOfPaletteViewControllerChanged:(MPPaletteViewController *)paletteViewController animate:(BOOL)animate
 {
+    NSLog(@"Height of %@ changed", paletteViewController);
+    
     // we simply iterate over each container for now
     for (NSOutlineView *container in [self.paletteContainers allValues])
     {
@@ -506,12 +520,19 @@
         NSIndexSet *indexSet = [[NSIndexSet alloc] initWithIndex:rowIndex];
         if (!animate)
         {
-            [NSAnimationContext beginGrouping];
+            [NSAnimationContext runAnimationGroup:^(NSAnimationContext *context) {
+                [[NSAnimationContext currentContext] setDuration:0];
+                [container noteHeightOfRowsWithIndexesChanged:indexSet];
+            } completionHandler:^{
+                // Nothing to do
+            }];
+            
+            /*[NSAnimationContext beginGrouping];
             {
                 [[NSAnimationContext currentContext] setDuration:0];
                 [container noteHeightOfRowsWithIndexesChanged:indexSet];
             }
-            [NSAnimationContext endGrouping];
+            [NSAnimationContext endGrouping];*/
         }
         else
         {

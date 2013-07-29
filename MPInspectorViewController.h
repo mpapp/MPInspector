@@ -31,5 +31,4 @@
 - (IBAction)selectNextInspectorTab:(id)sender;
 - (IBAction)selectPreviousInspectorTab:(id)sender;
 - (IBAction)selectFirstInspectorTab:(id)sender;
-
 @end
