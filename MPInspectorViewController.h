@@ -32,6 +32,3 @@
 - (IBAction)selectPreviousInspectorTab:(id)sender;
 - (IBAction)selectFirstInspectorTab:(id)sender;
 @end
-
-@interface MTDebugRowView : NSTableRowView
-@end
