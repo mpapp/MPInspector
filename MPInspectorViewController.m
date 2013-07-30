@@ -268,6 +268,11 @@
     scrollView.autoresizingMask = (NSViewWidthSizable | NSViewHeightSizable);
     scrollView.autoresizesSubviews = YES;
     scrollView.translatesAutoresizingMaskIntoConstraints = YES;
+    scrollView.hasHorizontalScroller = NO;
+    scrollView.horizontalScrollElasticity = NSScrollElasticityNone;
+    scrollView.hasVerticalScroller = YES;
+    scrollView.verticalScrollElasticity = NSScrollElasticityAllowed;
+    scrollView.autohidesScrollers = NO;
     
     // allow semi-transparent views on top at the cost of
     // some scrolling performance
@@ -489,7 +494,6 @@
             return 1.0; 
 
         NSLog(@"Will apply palette controller height %f for %@", paletteController.height, paletteController);
-        NSLog(@"Is expanded: %hhi,%hhi", [outlineView isItemExpanded:item], [outlineView isItemExpanded:[outlineView parentForItem:item]]);
         
         return paletteController.height;
     }
