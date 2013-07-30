@@ -269,6 +269,10 @@
     scrollView.autoresizesSubviews = YES;
     scrollView.translatesAutoresizingMaskIntoConstraints = YES;
     
+    // allow semi-transparent views on top at the cost of
+    // some scrolling performance
+    scrollView.contentView.copiesOnScroll = NO;
+    
     // add a tablecolumn
     NSTableColumn *tableColumn = [[NSTableColumn alloc] initWithIdentifier:@"MPInspectorColumn"];
     tableColumn.resizingMask = NSTableColumnAutoresizingMask;
