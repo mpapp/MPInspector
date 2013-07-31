@@ -39,7 +39,7 @@ typedef NS_ENUM(NSInteger, MPPaletteViewMode)
 
 - (void)refresh;
 - (void)refreshForced:(BOOL)forced;
-- (void)layoutSubviews;
+//- (void)layoutSubviews;
 
 @end
 

@@ -280,6 +280,7 @@
     
     // add a tablecolumn
     NSTableColumn *tableColumn = [[NSTableColumn alloc] initWithIdentifier:@"MPInspectorColumn"];
+    tableColumn.tableView = paletteContainer;
     tableColumn.resizingMask = NSTableColumnAutoresizingMask;
     tableColumn.editable = NO;
     [paletteContainer addTableColumn:tableColumn];
@@ -506,6 +507,11 @@
     return [self outlineView:outlineView isGroupItem:item];
 }
 
+- (CGFloat) outlineView:(NSOutlineView *)outlineView sizeToFitWidthOfColumn:(NSInteger)column
+{
+    // Stretch the only column we have horizontally to the width of the outline view
+    return [outlineView bounds].size.width;
+}
 
 #pragma mark -
 #pragma mark MPPaletteViewControllerDelegate

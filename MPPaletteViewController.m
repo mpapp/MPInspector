@@ -77,13 +77,13 @@
 {
     // override in subclass and update view based on the displayedItems,
     // then call super to layout the subviews
-    [self layoutSubviews];
+    //[self layoutSubviews];
 }
 
-- (void)layoutSubviews
+/*- (void)layoutSubviews
 {
     // override in subclass and update view layout based on the displayedItems
-}
+}*/
 
 - (BOOL)shouldDisplayPalette
 {
