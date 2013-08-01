@@ -85,7 +85,7 @@
     if (_awake) return;
     _awake = YES;
     
-    [self loadConfiguration];
+    //[self loadConfiguration];
 }
 
 - (void)loadConfiguration
@@ -256,6 +256,7 @@
     paletteContainer.indentationPerLevel = 0;
     paletteContainer.backgroundColor = [NSColor viewForegroundColor];
     paletteContainer.gridStyleMask = NSTableViewGridNone;
+    paletteContainer.floatsGroupRows = NO;
     paletteContainer.focusRingType = NSFocusRingTypeNone;
     paletteContainer.selectionHighlightStyle = NSTableViewSelectionHighlightStyleNone;
     paletteContainer.translatesAutoresizingMaskIntoConstraints = YES;
