@@ -130,6 +130,15 @@
 #pragma mark -
 #pragma mark Refresh
 
+- (BOOL)isEditing
+{
+    for (MPPaletteViewController *paletteController in [self.paletteControllersByIdentifier allValues])
+    {
+        if (paletteController.isEditing) return YES;
+    }
+    return NO;
+}
+
 - (void)refresh
 {
     [self refreshForced:NO];

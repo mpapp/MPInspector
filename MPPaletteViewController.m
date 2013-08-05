@@ -63,6 +63,16 @@
     return @[];
 }
 
+- (BOOL)isEditing
+{
+    return NO;
+}
+
+- (void)endEditing
+{
+    @throw [NSException exceptionWithName:@"MTAbstractMethodException" reason:@"Implement in subclass" userInfo:nil];
+}
+
 -(void)onRefresh
 {
 	[self refresh];

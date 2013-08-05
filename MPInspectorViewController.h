@@ -17,13 +17,15 @@
 @property (weak) IBOutlet DMTabBar *tabBar;
 @property (weak) IBOutlet NSTabView *tabView;
 
+@property (readonly, getter=isEditing) BOOL editing;
 @property (strong) NSString *entityType;
 
 @property (readonly) NSArray *displayedItems;
 
 @property (readwrite) NSInteger selectedTabIndex;
 @property (readwrite) NSString *selectedTabIdentifier;
-           
+
+- (void)endEditing;
 - (void)loadConfiguration;
 - (void)refresh;
 - (void)refreshForced:(BOOL)forced;

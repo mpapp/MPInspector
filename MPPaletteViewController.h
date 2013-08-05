@@ -26,6 +26,7 @@ typedef NS_ENUM(NSInteger, MPPaletteViewMode)
 @property (assign) id <MPPaletteViewControllerDelegate> delegate;
 
 @property (readonly) NSArray *displayedItems;
+@property (readonly, getter=isEditing) BOOL editing;
 @property (readonly) NSString *headerTitle;
 @property (readonly) BOOL shouldDisplayPalette;
 
@@ -37,6 +38,7 @@ typedef NS_ENUM(NSInteger, MPPaletteViewMode)
 - (instancetype)initWithDelegate:(id <MPPaletteViewControllerDelegate>)aDelegate identifier:(NSString *)identifier;
 - (instancetype)initWithDelegate:(id <MPPaletteViewControllerDelegate>)aDelegate identifier:(NSString *)identifier nibName:(NSString *)aName;
 
+- (void)endEditing;
 - (void)refresh;
 - (void)refreshForced:(BOOL)forced;
 //- (void)layoutSubviews;
