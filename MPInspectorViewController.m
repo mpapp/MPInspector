@@ -139,6 +139,14 @@
     return NO;
 }
 
+- (void)endEditing
+{
+    for (MPPaletteViewController *paletteController in [self.paletteControllersByIdentifier allValues])
+    {
+        if (paletteController.isEditing) [paletteController endEditing];
+    }
+}
+
 - (void)refresh
 {
     [self refreshForced:NO];
