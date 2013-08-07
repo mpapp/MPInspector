@@ -40,11 +40,6 @@
 
 
 @implementation MPInspectorViewController
-{
-    BOOL _awake;
-}
-
-@synthesize entityType = _entityType;
 
 - (NSString *)configurationFilename
 {
@@ -78,16 +73,6 @@
     return @"MTPublication";
 }
 
-- (void)awakeFromNib
-{
-    [super awakeFromNib];
-    
-    if (_awake) return;
-    _awake = YES;
-    
-    //[self loadConfiguration];
-}
-
 - (void)loadConfiguration
 {
     // make sure we have the outlets to tabBar and tabView set up
@@ -103,28 +88,13 @@
     self.paletteControllers = [NSMutableDictionary dictionaryWithCapacity:[self.tabConfigurations count]];
     self.paletteControllersByIdentifier = [NSMutableDictionary dictionaryWithCapacity:[self.tabConfigurations count] * 10];
     
-    self.entityType = self.defaultEntityType;
-}
-
-
-#pragma mark -
-#pragma mark EntityType
-
-// the set of tabs and their contents can be different for different
-// entities being displayed
-
-- (NSString *)entityType
-{
-    return _entityType;
-}
-
-- (void)setEntityType:(NSString *)entityType
-{
-    _entityType = entityType;
+    if (!self.entityType)
+    {
+        self.entityType = self.defaultEntityType;
+    }
     
-    [self setUpTabsForEntityType:entityType];
+    [self setUpTabsForEntityType:self.entityType];
 }
-
 
 
 #pragma mark -
