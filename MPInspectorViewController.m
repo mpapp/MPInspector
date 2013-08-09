@@ -482,7 +482,7 @@
         if (!paletteController.shouldDisplayPalette)
             return 1.0; 
 
-        NSLog(@"Will apply palette controller height %f for %@", paletteController.height, paletteController);
+        //NSLog(@"Will apply palette controller height %f for %@", paletteController.height, paletteController);
         
         return paletteController.height;
     }
