@@ -487,7 +487,7 @@
         return paletteController.height;
     }
     
-	return 0.0f;
+	return 1.0f;
 }
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView isItemExpandable:(id)item
