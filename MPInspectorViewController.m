@@ -186,7 +186,7 @@
         DMTabBarItem *item = [DMTabBarItem tabBarItemWithIcon:itemIcon tag:0];
         item.toolTip = (tooltip ? tooltip : title);
         item.keyEquivalent = [NSString stringWithFormat:@"%lu", i + 1];
-        item.keyEquivalentModifierMask = NSCommandKeyMask;
+        item.keyEquivalentModifierMask = NSControlKeyMask;
         
         if (alternateIconName)
             item.alternateIcon = [NSImage imageNamed:alternateIconName];
