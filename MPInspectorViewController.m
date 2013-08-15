@@ -350,6 +350,10 @@
         [controller willBecomeVisible];
     }
     
+    // reload the outlineview to enforce it to display correct row heights etc
+    NSOutlineView *outlineView = self.paletteContainers[newTabControllers[@"identifier"]];
+    [outlineView reloadData];
+    
     // go ahead and switch tabs
     [self.tabView selectTabViewItemAtIndex:selectedTabIndex];
     [self.tabBar setSelectedIndex:selectedTabIndex];
