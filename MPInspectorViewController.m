@@ -511,8 +511,6 @@
 
 - (void)noteHeightOfPaletteViewControllerChanged:(MPPaletteViewController *)paletteViewController animate:(BOOL)animate
 {
-    NSLog(@"Height of %@ changed", paletteViewController);
-    
     // we simply iterate over each container for now
     for (NSOutlineView *container in [self.paletteContainers allValues])
     {
