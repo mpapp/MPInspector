@@ -10,6 +10,7 @@
 #import "MTRefreshable.h"
     
 @interface MPPaletteViewController ()
+@property (getter=isVisible, assign) BOOL visible;
 @property (readonly) NSString *defaultNibName;
 @end
 
@@ -100,6 +101,28 @@
     // give the opportunity to subclasses to make clear that displaying the
     // palette with the current displayed items does not make sense
     return YES;
+}
+
+
+#pragma mark -
+#pragma mark Tab State
+
+- (void)willBecomeVisible
+{
+    self.visible = YES;
+}
+
+- (void)didBecomeVisible
+{
+}
+
+- (void)willResignVisible
+{
+}
+
+- (void)didResignVisible
+{
+    self.visible = NO;
 }
 
 
