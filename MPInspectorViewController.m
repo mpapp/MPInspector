@@ -165,6 +165,17 @@
         [self.tabView addTabViewItem:tabViewItem];
         [self setUpTabViewItem:tabViewItem tabConfiguration:tabConfiguration];
         
+        // special case the first tab, we need to set them visible
+        if (i == 0)
+        {
+            for (NSString *paletteIdentifier in tabConfiguration[@"palettes"])
+            {
+                MPPaletteViewController *controller = [self paletteViewControllerForIdentifier:paletteIdentifier];
+                [controller willBecomeVisible];
+                [controller didBecomeVisible];
+            }
+        }
+        
         // set up the DMTabBarItems
         NSString *iconName = tabConfiguration[@"icon"];
         NSString *alternateIconName = tabConfiguration[@"selectedIcon"];
@@ -175,7 +186,7 @@
         DMTabBarItem *item = [DMTabBarItem tabBarItemWithIcon:itemIcon tag:0];
         item.toolTip = (tooltip ? tooltip : title);
         item.keyEquivalent = [NSString stringWithFormat:@"%lu", i + 1];
-        item.keyEquivalentModifierMask = NSCommandKeyMask;
+        item.keyEquivalentModifierMask = NSControlKeyMask;
         
         if (alternateIconName)
             item.alternateIcon = [NSImage imageNamed:alternateIconName];
@@ -192,10 +203,7 @@
      {
          if (itemSelectionType == DMTabBarItemSelectionType_WillSelect)
          {
-             // FUTURE: send current tab palettes a will hide and new tab palettes a will show message
-             // that allows them to prepare or close down
-             NSTabViewItem *tabViewItem = self.tabView.tabViewItems[targetTabBarItemIndex];
-             [self.tabView selectTabViewItem:tabViewItem];
+             self.selectedTabIndex = targetTabBarItemIndex;
          }
      }];
 }
@@ -282,6 +290,9 @@
 
 - (MPPaletteViewController *)paletteViewControllerForIdentifier:(NSString *)identifier
 {
+    // not yet setup?
+    if (!identifier) return nil;
+    
     // importantly we assume there will only be one instance of a palette per inspector
     MPPaletteViewController *paletteController = self.paletteControllersByIdentifier[identifier];
     if (!paletteController)
@@ -318,9 +329,47 @@
 {
     if (selectedTabIndex >= [self.tabView numberOfTabViewItems])
         selectedTabIndex = [self.tabView numberOfTabViewItems] - 1;
-        
+    
+    if (selectedTabIndex == self.selectedTabIndex)
+        return;
+    
+    NSArray *tabs = self.tabConfigurations[self.entityType];
+    NSDictionary *oldTabControllers = tabs[self.selectedTabIndex];
+    NSDictionary *newTabControllers = tabs[selectedTabIndex];
+
+    // inform palettes we're going to switch
+    for (NSString *identifier in oldTabControllers[@"palettes"])
+    {
+        MPPaletteViewController *controller = [self paletteViewControllerForIdentifier:identifier];
+        [controller willResignVisible];
+    }
+    
+    for (NSString *identifier in newTabControllers[@"palettes"])
+    {
+        MPPaletteViewController *controller = [self paletteViewControllerForIdentifier:identifier];
+        [controller willBecomeVisible];
+    }
+    
+    // reload the outlineview to enforce it to display correct row heights etc
+    NSOutlineView *outlineView = self.paletteContainers[newTabControllers[@"identifier"]];
+    [outlineView reloadData];
+    
+    // go ahead and switch tabs
     [self.tabView selectTabViewItemAtIndex:selectedTabIndex];
     [self.tabBar setSelectedIndex:selectedTabIndex];
+    
+    // inform palettes we did switch
+    for (NSString *identifier in oldTabControllers[@"palettes"])
+    {
+        MPPaletteViewController *controller = [self paletteViewControllerForIdentifier:identifier];
+        [controller didResignVisible];
+    }
+    
+    for (NSString *identifier in newTabControllers[@"palettes"])
+    {
+        MPPaletteViewController *controller = [self paletteViewControllerForIdentifier:identifier];
+        [controller didBecomeVisible];
+    }
 }
 
 - (NSString *)selectedTabIdentifier
@@ -330,8 +379,7 @@
 
 - (void)setSelectedTabIdentifier:(NSString *)selectedTabIdentifier
 {
-    [self.tabView selectTabViewItemWithIdentifier:selectedTabIdentifier];
-    [self.tabBar setSelectedIndex:self.selectedTabIndex];
+    self.selectedTabIndex = [self.tabView indexOfTabViewItemWithIdentifier:selectedTabIdentifier];
 }
 
 - (IBAction)selectNextInspectorTab:(id)sender
@@ -352,7 +400,7 @@
 
 - (IBAction)selectFirstInspectorTab:(id)sender
 {
-    [self.tabView selectFirstTabViewItem:sender];
+    self.selectedTabIndex = 0;
 }
 
 
@@ -482,7 +530,7 @@
         if (!paletteController.shouldDisplayPalette)
             return 1.0; 
 
-        NSLog(@"Will apply palette controller height %f for %@", paletteController.height, paletteController);
+        //NSLog(@"Will apply palette controller height %f for %@", paletteController.height, paletteController);
         
         return paletteController.height;
     }
