@@ -124,11 +124,6 @@
 
 - (void)refreshForced:(BOOL)forced
 {
-    if (forced)
-    {
-        [self setUpTabsForEntityType:self.entityType];
-    }
-    
     for (MPPaletteViewController *paletteController in [self.paletteControllersByIdentifier allValues])
         [paletteController refreshForced:forced];
     
