@@ -256,6 +256,13 @@
     paletteContainer.selectionHighlightStyle = NSTableViewSelectionHighlightStyleNone;
     paletteContainer.translatesAutoresizingMaskIntoConstraints = YES;
     
+    assert(!paletteContainer.target);
+    assert(!paletteContainer.action);
+    assert(!paletteContainer.doubleAction);
+    
+    paletteContainer.target = self;
+    paletteContainer.doubleAction = @selector(dispatchDoubleClickAction:);
+    
     // embed the outlineview in a scrollview
     NSScrollView *scrollView = [[NSScrollView alloc] initWithFrame:CGRectZero];
     scrollView.documentView = paletteContainer;
@@ -286,6 +293,19 @@
 
     assert(paletteContainer);
     return paletteContainer;
+}
+
+- (IBAction)dispatchDoubleClickAction:(id)sender
+{
+    NSOutlineView *outlineView = sender;
+    
+    NSInteger row = [outlineView selectedRow];
+    id item = [outlineView itemAtRow:row];
+    
+    if ([item respondsToSelector:@selector(doubleClickAction:)])
+    {
+        [item doubleClickAction:item];
+    }
 }
 
 - (MPPaletteViewController *)paletteViewControllerForIdentifier:(NSString *)identifier
