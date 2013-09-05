@@ -34,3 +34,10 @@
 - (IBAction)selectPreviousInspectorTab:(id)sender;
 - (IBAction)selectFirstInspectorTab:(id)sender;
 @end
+
+
+@protocol MTDoubleClickableItem <NSObject>
+
+- (IBAction)doubleClickAction:(id)sender;
+
+@end
