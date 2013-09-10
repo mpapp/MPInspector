@@ -397,6 +397,25 @@
     self.selectedTabIndex = [self.tabView indexOfTabViewItemWithIdentifier:selectedTabIdentifier];
 }
 
+- (NSDictionary *)tabConfigurationForSelectedTab
+{
+    NSArray *a = self.tabConfigurations[self.entityType];
+    
+    for (NSDictionary *d in a)
+    {
+        if ([d[@"identifier"] isEqualToString:self.selectedTabIdentifier])
+        {
+            return d;
+        }
+    }
+    return nil;
+}
+
+- (NSArray *)paletteControllersForSelectedTab
+{
+    return self.paletteControllers[self.selectedTabIdentifier];
+}
+
 - (IBAction)selectNextInspectorTab:(id)sender
 {
     NSInteger idx = self.selectedTabIndex;

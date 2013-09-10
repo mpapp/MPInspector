@@ -30,6 +30,9 @@
 - (void)refresh;
 - (void)refreshForced:(BOOL)forced;
 
+- (NSDictionary *)tabConfigurationForSelectedTab;
+- (NSArray *)paletteControllersForSelectedTab;
+
 - (IBAction)selectNextInspectorTab:(id)sender;
 - (IBAction)selectPreviousInspectorTab:(id)sender;
 - (IBAction)selectFirstInspectorTab:(id)sender;
