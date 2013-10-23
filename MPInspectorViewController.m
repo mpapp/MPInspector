@@ -180,8 +180,10 @@
         NSImage *itemIcon = [NSImage imageNamed:iconName];        
         DMTabBarItem *item = [DMTabBarItem tabBarItemWithIcon:itemIcon tag:0];
         item.toolTip = (tooltip ? tooltip : title);
-        item.keyEquivalent = [NSString stringWithFormat:@"%lu", i + 1];
-        item.keyEquivalentModifierMask = NSControlKeyMask;
+        
+        // disabled to fix #1431
+        //item.keyEquivalent = [NSString stringWithFormat:@"%lu", i + 1];
+        //item.keyEquivalentModifierMask = NSControlKeyMask;
         
         if (alternateIconName)
             item.alternateIcon = [NSImage imageNamed:alternateIconName];
