@@ -415,9 +415,10 @@
 
 - (NSArray *)tabIdentifiers
 {
-    NSMutableArray *identifiers = [NSMutableArray arrayWithCapacity:[self.tabView numberOfTabViewItems]];
+    NSInteger count = [self.tabView numberOfTabViewItems];
+    NSMutableArray *identifiers = [NSMutableArray arrayWithCapacity:count];
     
-    for (NSInteger i = 0; i < identifiers.count; i++)
+    for (NSInteger i = 0; i < count; i++)
     {
         [identifiers addObject:[self.tabView tabViewItemAtIndex:i].identifier];
     }
