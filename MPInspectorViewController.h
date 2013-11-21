@@ -33,6 +33,9 @@
 - (NSDictionary *)tabConfigurationForSelectedTab;
 - (NSArray *)paletteControllersForSelectedTab;
 
+- (NSArray *)tabIdentifiers;
+- (NSArray *)paletteControllersForTabIdentifier:(id)identifier;
+
 - (IBAction)selectNextInspectorTab:(id)sender;
 - (IBAction)selectPreviousInspectorTab:(id)sender;
 - (IBAction)selectFirstInspectorTab:(id)sender;

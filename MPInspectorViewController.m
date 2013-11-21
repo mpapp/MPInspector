@@ -413,9 +413,26 @@
     return nil;
 }
 
+- (NSArray *)tabIdentifiers
+{
+    NSMutableArray *identifiers = [NSMutableArray arrayWithCapacity:[self.tabView numberOfTabViewItems]];
+    
+    for (NSInteger i = 0; i < identifiers.count; i++)
+    {
+        [identifiers addObject:[self.tabView tabViewItemAtIndex:i].identifier];
+    }
+    
+    return identifiers;
+}
+
 - (NSArray *)paletteControllersForSelectedTab
 {
     return self.paletteControllers[self.selectedTabIdentifier];
+}
+
+- (NSArray *)paletteControllersForTabIdentifier:(id)identifier
+{
+    return self.paletteControllers[identifier];
 }
 
 - (IBAction)selectNextInspectorTab:(id)sender
