@@ -55,6 +55,12 @@ typedef NS_ENUM(NSInteger, MPPaletteViewMode)
 
 @end
 
+
+@interface MPPaletteViewController (Subclassing)
+- (NSString *)defaultNibName;
+@end
+
+
 @protocol MPPaletteViewControllerDelegate <NSObject>
 @required
 - (NSArray *)displayedItemsForPaletteViewController:(MPPaletteViewController *)paletteViewController;

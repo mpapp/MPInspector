@@ -14,6 +14,7 @@
 @property (readonly) NSString *defaultNibName;
 @end
 
+
 @implementation MPPaletteViewController
 
 @synthesize delegate = _delegate;
