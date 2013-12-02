@@ -1,34 +1,69 @@
 //
 //  MPPaletteViewController.h
-//  Manuscripts
 //
 //  Created by Matias Piipari on 21/12/2012.
 //  Copyright (c) 2012 Manuscripts.app Limited. All rights reserved.
-//
 
 #import "PARViewController.h"
+
+typedef NS_ENUM(NSInteger, MPPaletteViewMode)
+{
+	MPPaletteViewModeNormal   = 0,
+    MPPaletteViewModeEdit     = 1,
+    MPPaletteViewModeExpanded = 2
+};
+
+@protocol MPPaletteViewControllerDelegate;
 
 @class MPInspectorViewController, JKConfiguration;
 
 @interface MPPaletteViewController : PARViewController
+{    
+    __unsafe_unretained id <MPPaletteViewControllerDelegate> delegate;
+}
 
-@property (weak) IBOutlet NSButton *infoButton;
+@property (strong) NSString *identifier;
+@property (assign) id <MPPaletteViewControllerDelegate> delegate;
 
-@property (weak) IBOutlet NSPopover *infoPopover;
+@property (readonly) NSArray *displayedItems;
 
-@property (weak) IBOutlet MPInspectorViewController *inspectorController;
-@property (weak) NSOutlineView *inspectorOutlineView;
-@property (weak) JKConfiguration *configuration;
+@property (readonly, getter=isVisible, assign) BOOL visible;
+@property (readonly, getter=isEditing) BOOL editing;
 
-/** The set of allowed palette modes. */
-+ (NSSet *)allowedConfigurationModes;
+@property (readonly) NSString *headerTitle;
+@property (readonly) BOOL shouldDisplayPalette;
 
-/** The name of the default string. Base class implementation returns 'normal', overloadable by subclasses. */
-@property (readonly, copy) NSString *defaultConfigurationMode;
+@property (assign) CGFloat height;
 
-@property (readwrite, copy) NSString *configurationMode;
-- (void)setConfigurationMode:(NSString *)configurationMode animated:(BOOL)animated;
+@property (assign) MPPaletteViewMode mode;
+- (void)setMode:(MPPaletteViewMode)mode animate:(BOOL)animate;
 
-- (IBAction)getInfo:(id)sender;
+- (instancetype)initWithDelegate:(id <MPPaletteViewControllerDelegate>)aDelegate identifier:(NSString *)identifier;
+- (instancetype)initWithDelegate:(id <MPPaletteViewControllerDelegate>)aDelegate identifier:(NSString *)identifier nibName:(NSString *)aName;
 
+#pragma mark -
+- (void)willBecomeVisible;
+- (void)didBecomeVisible;
+
+- (void)willResignVisible;
+- (void)didResignVisible;
+
+- (void)endEditing;
+- (void)refresh;
+- (void)refreshForced:(BOOL)forced;
+//- (void)layoutSubviews;
+
+@end
+
+
+@interface MPPaletteViewController (Subclassing)
+- (NSString *)defaultNibName;
+@end
+
+
+@protocol MPPaletteViewControllerDelegate <NSObject>
+@required
+- (NSArray *)displayedItemsForPaletteViewController:(MPPaletteViewController *)paletteViewController;
+@optional
+- (void)noteHeightOfPaletteViewControllerChanged:(MPPaletteViewController *)paletteViewController animate:(BOOL)animate;
 @end

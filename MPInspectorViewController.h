@@ -1,33 +1,49 @@
 //
-//  MPInspectorViewController.h
+//  MPPaletteViewController.h
 //
-//  Created by Matias Piipari on 17/09/2012.
-//  Copyright (c) 2012 Matias Piipari. All rights reserved.
-//
+//  Created by Matias Piipari on 21/12/2012.
+//  Copyright (c) 2012 Manuscripts.app Limited. All rights reserved.
 
 #import <Cocoa/Cocoa.h>
 
 #import "PARViewController.h"
+#import "MPPaletteViewController.h"
 
-@class KGNoiseView, DMTabBar, JKOutlineView;
+@class DMTabBar, JKOutlineView;
 @class MPPaletteViewController;
-@class MPManuscriptsPackageController;
 
-/** A view controller for the Manuscripts.app main window's inspector. */
-@interface MPInspectorViewController : PARViewController <NSOutlineViewDataSource, NSOutlineViewDelegate>
+@interface MPInspectorViewController : PARViewController <NSOutlineViewDataSource, NSOutlineViewDelegate, MPPaletteViewControllerDelegate>
 
-@property (weak) IBOutlet KGNoiseView *backgroundView;
 @property (weak) IBOutlet DMTabBar *tabBar;
 @property (weak) IBOutlet NSTabView *tabView;
 
-@property (strong) NSString *selectionType;
-@property (readonly, strong) NSDictionary *palettesBySelectionType;
+@property (readonly, getter=isEditing) BOOL editing;
+@property (strong) NSString *entityType;
 
-- (CGFloat)heightForPaletteViewController:(MPPaletteViewController *)paletteViewController;
-- (void)noteHeightOfPaletteViewControllerChanged:(MPPaletteViewController *)paletteViewController;
+@property (readonly) NSArray *displayedItems;
 
-- (void)setPaletteContainerWithKey:(NSString *)key;
+@property (readwrite) NSInteger selectedTabIndex;
+@property (readwrite) NSString *selectedTabIdentifier;
 
-- (void)configurePaletteViewController:(MPPaletteViewController *)vc;
+- (void)endEditing;
+- (void)loadConfiguration;
+- (void)refresh;
+- (void)refreshForced:(BOOL)forced;
+
+- (NSDictionary *)tabConfigurationForSelectedTab;
+- (NSArray *)paletteControllersForSelectedTab;
+
+- (NSArray *)tabIdentifiers;
+- (NSArray *)paletteControllersForTabIdentifier:(id)identifier;
+
+- (IBAction)selectNextInspectorTab:(id)sender;
+- (IBAction)selectPreviousInspectorTab:(id)sender;
+- (IBAction)selectFirstInspectorTab:(id)sender;
+@end
+
+
+@protocol MTDoubleClickableItem <NSObject>
+
+- (IBAction)doubleClickAction:(id)sender;
 
 @end

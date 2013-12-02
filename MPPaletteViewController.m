@@ -1,72 +1,162 @@
 //
 //  MPPaletteViewController.m
-//  Manuscripts
 //
 //  Created by Matias Piipari on 21/12/2012.
 //  Copyright (c) 2012 Manuscripts.app Limited. All rights reserved.
-//
 
-#import "MPManuscriptsPaletteViewController.h"
+#import "MPPaletteViewController.h"
 #import "MPInspectorViewController.h"
 
-#import "JKConfiguration.h"
-
+#import "MTRefreshable.h"
+    
 @interface MPPaletteViewController ()
+@property (getter=isVisible, assign) BOOL visible;
+@property (readonly) NSString *defaultNibName;
 @end
+
 
 @implementation MPPaletteViewController
 
-- (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+@synthesize delegate = _delegate;
+@synthesize height = _height;
+
+- (instancetype)initWithDelegate:(id <MPPaletteViewControllerDelegate>)aDelegate identifier:(NSString *)identifier
 {
-    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
-    if (self)
+    return [self initWithDelegate:aDelegate identifier:identifier nibName:self.defaultNibName];
+}
+
+- (instancetype)initWithDelegate:(id <MPPaletteViewControllerDelegate>)aDelegate identifier:(NSString *)identifier nibName:(NSString *)aName
+{
+    if (self = [super initWithNibName:aName bundle:nil])
     {
-        self.configuration.mode = [self defaultConfigurationMode];
+        self.delegate = aDelegate;
+        self.identifier = identifier;
+        self.mode = MPPaletteViewModeNormal;
     }
-    
     return self;
 }
 
-- (void)awakeFromNib
+- (void)dealloc
 {
-    [super awakeFromNib];
+    _delegate = nil;
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
-- (void)getInfo:(id)sender
-{
-    [self.infoPopover showRelativeToRect:[self.infoButton bounds] ofView:self.infoButton preferredEdge:NSMaxYEdge];
-}
 
-- (void)setConfigurationMode:(NSString *)configurationMode
+- (NSString *)defaultNibName
 {
-    [self setConfigurationMode:configurationMode animated:NO];
-}
-
-- (void)setConfigurationMode:(NSString *)configurationMode animated:(BOOL)animated
-{
-    assert([self.class.allowedConfigurationModes containsObject:configurationMode]);
-    if ([self.configuration.mode isEqualToString:configurationMode]) return;
+    // by default use the class name but strip the Controller part
+    // MPPaletteViewController -> MPPaletteView.nib
+    NSString *className = NSStringFromClass([self class]);
     
-    self.configuration.mode = configurationMode;
-    [self.inspectorController noteHeightOfPaletteViewControllerChanged:self];
+    NSRange r = [className rangeOfString:@"Controller" options:NSCaseInsensitiveSearch];
+	return (r.location != NSNotFound ? [className substringToIndex:r.location] : className);
 }
 
-- (NSString *)configurationMode
+
+#pragma mark -
+#pragma mark Refresh
+
+- (NSArray *)displayedItems
 {
-    return _configuration.mode;
+    if ([self.delegate respondsToSelector:@selector(displayedItemsForPaletteViewController:)])
+        return [self.delegate displayedItemsForPaletteViewController:self];
+        
+    return @[];
 }
 
-+ (NSSet *)allowedConfigurationModes
+- (BOOL)isEditing
 {
-    static NSSet *_allowedConfigurationModes = nil;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        _allowedConfigurationModes = [NSSet setWithArray:@[ @"normal" ]];
-    });
+    return NO;
+}
+
+- (void)endEditing
+{
+    @throw [NSException exceptionWithName:@"MTAbstractMethodException" reason:@"Implement in subclass" userInfo:nil];
+}
+
+-(void)onRefresh
+{
+	[self refresh];
+}
+
+- (void)refresh
+{
+    [self refreshForced:NO];
+}
+
+- (void)refreshForced:(BOOL)forced
+{
+    // override in subclass and update view based on the displayedItems,
+    // then call super to layout the subviews
+}
+
+- (BOOL)shouldDisplayPalette
+{
+    // give the opportunity to subclasses to make clear that displaying the
+    // palette with the current displayed items does not make sense
+    return YES;
+}
+
+
+#pragma mark -
+#pragma mark Tab State
+
+- (void)willBecomeVisible
+{
+    self.visible = YES;
+}
+
+- (void)didBecomeVisible
+{
+}
+
+- (void)willResignVisible
+{
+}
+
+- (void)didResignVisible
+{
+    self.visible = NO;
+}
+
+
+#pragma mark -
+#pragma mark Configuration
+
+- (NSString *)headerTitle
+{
+    // subclasses should override this method to provide a meaningful header title,
+    // which is shown in the outlineview header
+    return @"Journal Article";
+}
+
+- (CGFloat)height
+{
+    // subclasses can override this method to provide a different view height per mode
+    // by default we return the height of the view provided by the view controller 
     
-    return _allowedConfigurationModes;
+    if (_height < 1.0)
+    {
+        return NSHeight(self.view.frame);
+    }
+    
+    return _height;
 }
 
-- (NSString *)defaultConfigurationMode { return @"normal"; }
+- (void)setHeight:(CGFloat)height
+{
+    _height = height;
+}
+
+- (void)setMode:(MPPaletteViewMode)mode animate:(BOOL)animate;
+{    
+    if (self.mode == mode) return;
+    
+    // subclasses can override setMode: to update or change the view layout 
+    self.mode = mode;
+    
+    [self.delegate noteHeightOfPaletteViewControllerChanged:self animate:animate];
+}
 
 @end

@@ -124,6 +124,11 @@
 
 - (void)refreshForced:(BOOL)forced
 {
+    if (forced)
+    {
+        [self setUpTabsForEntityType:self.entityType];
+    }
+    
     for (MPPaletteViewController *paletteController in [self.paletteControllersByIdentifier allValues])
         [paletteController refreshForced:forced];
     
@@ -180,10 +185,8 @@
         NSImage *itemIcon = [NSImage imageNamed:iconName];        
         DMTabBarItem *item = [DMTabBarItem tabBarItemWithIcon:itemIcon tag:0];
         item.toolTip = (tooltip ? tooltip : title);
-        
-        // disabled to fix #1431
-        //item.keyEquivalent = [NSString stringWithFormat:@"%lu", i + 1];
-        //item.keyEquivalentModifierMask = NSControlKeyMask;
+        item.keyEquivalent = [NSString stringWithFormat:@"%lu", i + 1];
+        item.keyEquivalentModifierMask = NSControlKeyMask;
         
         if (alternateIconName)
             item.alternateIcon = [NSImage imageNamed:alternateIconName];
@@ -253,13 +256,6 @@
     paletteContainer.selectionHighlightStyle = NSTableViewSelectionHighlightStyleNone;
     paletteContainer.translatesAutoresizingMaskIntoConstraints = YES;
     
-    assert(!paletteContainer.target);
-    assert(!paletteContainer.action);
-    assert(!paletteContainer.doubleAction);
-    
-    paletteContainer.target = self;
-    paletteContainer.doubleAction = @selector(dispatchDoubleClickAction:);
-    
     // embed the outlineview in a scrollview
     NSScrollView *scrollView = [[NSScrollView alloc] initWithFrame:CGRectZero];
     scrollView.documentView = paletteContainer;
@@ -290,19 +286,6 @@
 
     assert(paletteContainer);
     return paletteContainer;
-}
-
-- (IBAction)dispatchDoubleClickAction:(id)sender
-{
-    NSOutlineView *outlineView = sender;
-    
-    NSInteger row = [outlineView selectedRow];
-    id item = [outlineView itemAtRow:row];
-    
-    if ([item respondsToSelector:@selector(doubleClickAction:)])
-    {
-        [item doubleClickAction:item];
-    }
 }
 
 - (MPPaletteViewController *)paletteViewControllerForIdentifier:(NSString *)identifier
@@ -397,43 +380,6 @@
 - (void)setSelectedTabIdentifier:(NSString *)selectedTabIdentifier
 {
     self.selectedTabIndex = [self.tabView indexOfTabViewItemWithIdentifier:selectedTabIdentifier];
-}
-
-- (NSDictionary *)tabConfigurationForSelectedTab
-{
-    NSArray *a = self.tabConfigurations[self.entityType];
-    
-    for (NSDictionary *d in a)
-    {
-        if ([d[@"identifier"] isEqualToString:self.selectedTabIdentifier])
-        {
-            return d;
-        }
-    }
-    return nil;
-}
-
-- (NSArray *)tabIdentifiers
-{
-    NSInteger count = [self.tabView numberOfTabViewItems];
-    NSMutableArray *identifiers = [NSMutableArray arrayWithCapacity:count];
-    
-    for (NSInteger i = 0; i < count; i++)
-    {
-        [identifiers addObject:[self.tabView tabViewItemAtIndex:i].identifier];
-    }
-    
-    return identifiers;
-}
-
-- (NSArray *)paletteControllersForSelectedTab
-{
-    return self.paletteControllers[self.selectedTabIdentifier];
-}
-
-- (NSArray *)paletteControllersForTabIdentifier:(id)identifier
-{
-    return self.paletteControllers[identifier];
 }
 
 - (IBAction)selectNextInspectorTab:(id)sender
@@ -613,6 +559,11 @@
 
 - (void)noteHeightOfPaletteViewControllerChanged:(MPPaletteViewController *)paletteViewController animate:(BOOL)animate
 {
+<<<<<<< HEAD
+=======
+    // NSLog(@"Height of %@ changed", paletteViewController);
+    
+>>>>>>> 4e6fa5afccc457bf2cd6b089fc8ec4592e46a8f5
     // we simply iterate over each container for now
     for (NSOutlineView *container in [self.paletteContainers allValues])
     {
