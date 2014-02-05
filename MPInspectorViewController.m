@@ -55,6 +55,8 @@
     
     _configurationsByPaletteNibName = [NSMutableDictionary dictionaryWithCapacity:20];
     
+    _backgroundView.translatesAutoresizingMaskIntoConstraints = NO;
+    
     assert(_palettesBySelectionType);
     
     assert(_backgroundView);
@@ -419,7 +421,7 @@
     if (!item)
     {
         NSArray *palettes = self.palettesForTabTitle[outlineView.identifier]; assert(palettes);
-        assert(palettes.count > 0);
+        //assert(palettes.count > 0);
         return palettes.count;
     }
     
