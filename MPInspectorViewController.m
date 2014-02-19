@@ -147,16 +147,22 @@
     [paletteContainer setFocusRingType:NSFocusRingTypeNone];
     [paletteContainer setSelectionHighlightStyle:NSTableViewSelectionHighlightStyleNone];
     [paletteContainer setAutosaveTableColumns:NO];
+    paletteContainer.columnAutoresizingStyle = NSTableViewFirstColumnOnlyAutoresizingStyle;
     
     paletteContainer.identifier = identifier;
     
-    NSTableColumn *c = [[NSTableColumn alloc] initWithIdentifier:@"MPInspectorColumn"];
-    [c setEditable: NO];
-    [paletteContainer addTableColumn: c];
+    NSTableColumn *column = [[NSTableColumn alloc] initWithIdentifier:@"MPInspectorColumn"];
+    [column setEditable: NO];
+    [paletteContainer addTableColumn: column];
+    column.resizingMask = NSTableColumnAutoresizingMask;
     
     NSScrollView *scrollView = [[NSScrollView alloc] initWithFrame:CGRectZero];
     scrollView.documentView = paletteContainer;
     scrollView.drawsBackground = NO;
+    scrollView.hasHorizontalScroller = NO;
+    scrollView.hasVerticalScroller = YES;
+    scrollView.autohidesScrollers = YES;
+    scrollView.usesPredominantAxisScrolling = YES;
     
     [paletteContainer setHeaderView:nil];
     
