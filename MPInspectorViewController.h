@@ -9,7 +9,7 @@
 
 #import "PARViewController.h"
 
-@class KGNoiseView, DMTabBar, JKOutlineView;
+@class KGNoiseView, DMTabBar; //, JKOutlineView;
 @class MPPaletteViewController;
 @class MPManuscriptsPackageController;
 

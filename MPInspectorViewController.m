@@ -18,7 +18,6 @@
 #import "JKConfigurationHeaderView.h"
 #import "JKConfigurationGroup.h"
 #import "JKConfiguration.h"
-#import "JKOutlineView.h"
 
 #import "NSView+MPExtensions.h"
 
@@ -122,49 +121,77 @@
          {
              assert(_tabView);
              [_tabView selectTabViewItem:[_tabView.tabViewItems objectAtIndex:targetTabBarItemIndex]];
-         } else if (selectionType == DMTabBarItemSelectionType_DidSelect)
+         }
+         else if (selectionType == DMTabBarItemSelectionType_DidSelect)
          {
-             //NSLog(@"Did select %lu/%@",targetTabBarItemIndex,targetTabBarItem);
-             //[[[[[[[_tabView selectedTabViewItem] view] subviews] firstObject] subviews] firstObject] reloadData];
+             for (NSUInteger i = 0; i < _tabView.tabViewItems.count; i++)
+             {
+                 NSTabViewItem *item = [_tabView tabViewItemAtIndex:i];
+                 NSArray *subviews = [item.view subviews];
+                 if (subviews.count > 0)
+                 {
+                     NSScrollView *sv = subviews[0];
+                     assert([sv isKindOfClass:NSScrollView.class]);
+                     sv.hidden = (i != targetTabBarItemIndex);
+                 }
+             }
          }
      }];
 }
 
 #pragma mark - Palette container setup
 
-- (JKOutlineView *)newPaletteContainerForTabViewIndex:(NSUInteger)viewIndex identifier:(NSString *)identifier
+- (NSOutlineView *)newPaletteContainerForTabViewIndex:(NSUInteger)viewIndex identifier:(NSString *)identifier
 {
     NSSize superViewSize = self.view.frame.size;
     
     NSRect frame = NSMakeRect(0, 0, superViewSize.width, superViewSize.height);
-    JKOutlineView *paletteContainer = [[JKOutlineView alloc] initWithFrame:frame];
+    //JKOutlineView *paletteContainer = [[JKOutlineView alloc] initWithFrame:frame];
+    NSOutlineView *paletteContainer = [[NSOutlineView alloc] initWithFrame:frame];
+    paletteContainer.autoresizesSubviews = YES;
+    //paletteContainer.autosaveTableColumns = NO;
+    //paletteContainer.autoresizingMask = (NSViewWidthSizable | NSViewHeightSizable);
+    paletteContainer.headerView = nil;
+    paletteContainer.floatsGroupRows = NO;
+    
     [paletteContainer setTranslatesAutoresizingMaskIntoConstraints:NO];
     [paletteContainer setIndentationMarkerFollowsCell:NO];
     [paletteContainer setIndentationPerLevel:0];
     [paletteContainer setBackgroundColor:[NSColor colorWithCalibratedWhite:1.0 alpha:0.0]];
-    [paletteContainer setGridColor:[NSColor clearColor]];
+    [paletteContainer setGridColor:[NSColor redColor]]; //clearColor]];
     [paletteContainer setGridStyleMask:NSTableViewGridNone];
     [paletteContainer setFocusRingType:NSFocusRingTypeNone];
     [paletteContainer setSelectionHighlightStyle:NSTableViewSelectionHighlightStyleNone];
     [paletteContainer setAutosaveTableColumns:NO];
-    paletteContainer.columnAutoresizingStyle = NSTableViewFirstColumnOnlyAutoresizingStyle;
+    paletteContainer.columnAutoresizingStyle = NSTableViewReverseSequentialColumnAutoresizingStyle;
     
     paletteContainer.identifier = identifier;
     
     NSTableColumn *column = [[NSTableColumn alloc] initWithIdentifier:@"MPInspectorColumn"];
     [column setEditable: NO];
-    [paletteContainer addTableColumn: column];
     column.resizingMask = NSTableColumnAutoresizingMask;
+    column.editable = NO;
+    [paletteContainer addTableColumn: column];
+    //paletteContainer.wantsLayer = YES;
     
     NSScrollView *scrollView = [[NSScrollView alloc] initWithFrame:CGRectZero];
     scrollView.documentView = paletteContainer;
-    scrollView.drawsBackground = NO;
-    scrollView.hasHorizontalScroller = NO;
-    scrollView.hasVerticalScroller = YES;
     scrollView.autohidesScrollers = YES;
-    scrollView.usesPredominantAxisScrolling = YES;
+    scrollView.drawsBackground = YES;
     
-    [paletteContainer setHeaderView:nil];
+    //scrollView.autoresizingMask = (NSViewWidthSizable | NSViewHeightSizable);
+    scrollView.autoresizesSubviews = YES;
+    scrollView.translatesAutoresizingMaskIntoConstraints = NO;
+    scrollView.hasHorizontalScroller = NO;
+    scrollView.horizontalScrollElasticity = NSScrollElasticityNone;
+    scrollView.hasVerticalScroller = YES;
+    scrollView.verticalScrollElasticity = NSScrollElasticityAllowed;
+
+    scrollView.usesPredominantAxisScrolling = YES;
+    scrollView.contentView.copiesOnScroll = YES;
+    //scrollView.wantsLayer = YES;
+    
+    //    [paletteContainer setHeaderView:nil];
     
     [paletteContainer registerNib:[[NSNib alloc] initWithNibNamed:@"MPInspectorPaletteRowView" bundle:nil]
                     forIdentifier:@"MPInspectorPaletteRowView"];
@@ -173,6 +200,7 @@
     [paletteContainer registerNib:[[NSNib alloc] initWithNibNamed:@"MPInspectorPaletteHeaderRowView" bundle:nil]
                     forIdentifier:@"MPInspectorPaletteHeaderRowView"];
     
+    scrollView.hidden = YES;
     [[[_tabView tabViewItemAtIndex:viewIndex] view] addSubviewConstrainedToSuperViewEdges:scrollView
                                                                                 topOffset:0 rightOffset:0 bottomOffset:0 leftOffset:0];
     
@@ -214,7 +242,7 @@
     }];
     assert(tabIndex != NSNotFound && configurationForKey);
     
-    JKOutlineView *outlineView = [self newPaletteContainerForTabViewIndex:tabIndex identifier:key];
+    NSOutlineView *outlineView = [self newPaletteContainerForTabViewIndex:tabIndex identifier:key];
     [self setValue:outlineView forKey:key];
 }
 
@@ -242,7 +270,7 @@
     assert(dictionary);
     group.children = @[ paletteConfig ];
     
-    JKOutlineView *outlineView = [self valueForKey:paletteContainerKey];
+    NSOutlineView *outlineView = [self valueForKey:paletteContainerKey];
     [outlineView registerNib:[[NSNib alloc] initWithNibNamed:paletteNibName bundle:nil] forIdentifier:paletteNibName];
     
     return group;
@@ -288,7 +316,7 @@
     
     for (NSString *key in [self.palettesForTabTitle allKeys])
     {
-        JKOutlineView *paletteContainer = [self valueForKey:key];
+        NSOutlineView *paletteContainer = [self valueForKey:key];
         paletteContainer.delegate = self;
         paletteContainer.dataSource = self;
         [paletteContainer reloadData];
@@ -308,10 +336,12 @@
 - (NSView *)outlineView:(NSOutlineView *)outlineView
      viewForTableColumn:(NSTableColumn *)tableColumn item:(id)item
 {
+    //
+    // Palette header cell views
+    //
     if ([self outlineView:outlineView isGroupItem:item])
     {
-		JKConfigurationHeaderView *headerView
-        = [outlineView makeViewWithIdentifier:@"MPInspectorPaletteHeaderView" owner:self];
+		JKConfigurationHeaderView *headerView = [outlineView makeViewWithIdentifier:@"MPInspectorPaletteHeaderView" owner:self];
         
         assert([headerView isKindOfClass:[JKConfigurationHeaderView class]]);
         headerView.textField.stringValue = [item title];
@@ -323,6 +353,9 @@
         return headerView;
 	}
     
+    //
+    // Palette cell views
+    //
     assert([item isKindOfClass:[JKConfiguration class]]);
 	
 	JKConfiguration *config = item;
@@ -348,6 +381,7 @@
     [self configurePaletteViewController:vc];
     
 	NSTableCellView *view = (NSTableCellView *)vc.view;
+    //view.wantsLayer = YES;
     
     assert ([view isKindOfClass:[NSTableCellView class]] && [view class] != [NSTableCellView class]);
     
@@ -399,24 +433,29 @@
      [[NSIndexSet alloc] initWithIndex:rowIndex]];
 }
 
-- (NSTableRowView *) outlineView:(NSOutlineView *)outlineView rowViewForItem:(id)item
+- (NSTableRowView *)outlineView:(NSOutlineView *)outlineView rowViewForItem:(id)item
 {
-	if (![self outlineView:outlineView isGroupItem:item])
+    BOOL isHeader = [self outlineView:outlineView isGroupItem:item];
+    NSTableRowView *rowView = nil;
+    
+	if (isHeader)
     {
-        // FIXME: is non-group item suppsoed to have a JKConfiguration*Header*RowView
-        JKConfigurationHeaderRowView *rowView = [outlineView makeViewWithIdentifier:@"MPInspectorPaletteRowView" owner:nil];
+        rowView = [outlineView makeViewWithIdentifier:@"MPInspectorPaletteHeaderRowView" owner:nil];
         if (!rowView) {
             rowView = [[JKConfigurationHeaderRowView alloc] initWithFrame:CGRectZero];
+            rowView.identifier = @"MPInspectorPaletteHeaderRowView";
+        }
+    }
+    else
+    {
+        rowView = [outlineView makeViewWithIdentifier:@"MPInspectorPaletteRowView" owner:nil];
+        if (!rowView) {
+            rowView = [[JKConfigurationRowView alloc] initWithFrame:CGRectZero];
             rowView.identifier = @"MPInspectorPaletteRowView";
         }
 	}
 	
-	JKConfigurationHeaderRowView *rowView = [outlineView makeViewWithIdentifier:@"MPInspectorPaletteHeaderRowView" owner:nil];
-	if (!rowView) {
-		rowView = [[JKConfigurationHeaderRowView alloc] initWithFrame:CGRectZero];
-		rowView.identifier = @"MPInspectorPaletteHeaderRowView";
-	}
-	
+    assert(rowView);
 	return rowView;
 }
 
@@ -457,7 +496,7 @@
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView isItemExpandable:(id)item
 {
-    return [self outlineView:outlineView isGroupItem:item];
+    return YES; //return [self outlineView:outlineView isGroupItem:item];
 }
 
 @end
