@@ -119,7 +119,7 @@
          if (selectionType == DMTabBarItemSelectionType_WillSelect)
          {
              assert(_tabView);
-             [_tabView selectTabViewItem:[_tabView.tabViewItems objectAtIndex:targetTabBarItemIndex]];
+             [_tabView selectTabViewItem:(_tabView.tabViewItems)[targetTabBarItemIndex]];
          } else if (selectionType == DMTabBarItemSelectionType_DidSelect)
          {
              //NSLog(@"Did select %lu/%@",targetTabBarItemIndex,targetTabBarItem);
