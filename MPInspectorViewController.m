@@ -171,6 +171,7 @@
     [column setEditable: NO];
     column.resizingMask = NSTableColumnAutoresizingMask;
     column.editable = NO;
+    column.width = 320.0;
     [paletteContainer addTableColumn: column];
     //paletteContainer.wantsLayer = YES;
     
