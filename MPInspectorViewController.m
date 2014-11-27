@@ -12,8 +12,6 @@
 #import "DMTabBar.h"
 #import "DMTabBarItem.h"
 
-#import "KGNoise.h"
-
 #import "JKConfigurationHeaderRowView.h"
 #import "JKConfigurationHeaderView.h"
 #import "JKConfigurationGroup.h"
