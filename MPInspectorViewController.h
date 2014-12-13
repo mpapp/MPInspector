@@ -1,4 +1,5 @@
 //
+
 //  MPInspectorViewController.h
 //
 //  Created by Matias Piipari on 17/09/2012.
@@ -17,7 +18,6 @@
 @interface MPInspectorViewController : PARViewController <NSOutlineViewDataSource, NSOutlineViewDelegate>
 
 @property (weak) IBOutlet NSView *backgroundView;
-@property (weak) IBOutlet DMTabBar *tabBar;
 @property (weak) IBOutlet NSTabView *tabView;
 
 @property (strong) NSString *selectionType;

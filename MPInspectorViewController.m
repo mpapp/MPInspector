@@ -30,8 +30,9 @@
 }
 
 @property (strong) NSDictionary *palettesByEntityType;
-@property (strong) NSMutableDictionary *configurationsByPaletteNibName;
 @property (strong) NSDictionary *palettesBySelectionType;
+
+@property (strong) NSMutableDictionary *configurationsByPaletteNibName;
 @property (strong) NSDictionary *palettesForTabTitle;
 
 @property (readwrite) BOOL hasAwoken;
@@ -57,8 +58,6 @@
     assert(_palettesBySelectionType);
     
     assert(_backgroundView);
-    
-    self.selectionType = @"MPSection";
 }
 
 - (NSString *)selectionType
@@ -69,72 +68,7 @@
 - (void)setSelectionType:(NSString *)selectionType
 {
     _selectionType = selectionType;
-    [self setUpTabBarForSelectionType:selectionType];
     [self setUpPaletteSectionsForSelectionType:selectionType];
-}
-
-#pragma mark - Tab setup
-
-- (void)setUpTabBarForSelectionType:(NSString *)selectionType
-{
-    NSArray *tabConfigurations = self.palettesBySelectionType[selectionType];
-    
-    NSMutableArray *items = [NSMutableArray arrayWithCapacity:tabConfigurations.count];
-    for (NSUInteger i = 0; i < tabConfigurations.count; i++)
-    {
-        [_tabView addTabViewItem:[[NSTabViewItem alloc] initWithIdentifier:[NSString stringWithFormat:@"tabView%lu", i+1]]];
-        
-        NSDictionary *tabConfiguration = tabConfigurations[i];
-        NSString *iconName = tabConfiguration[@"icon"];
-        NSString *tooltip = tabConfiguration[@"toolTip"];
-        
-        NSImage *itemIcon = [NSImage imageNamed:iconName]; assert(itemIcon);
-        [itemIcon setTemplate:YES];
-        DMTabBarItem *item = [DMTabBarItem tabBarItemWithIcon:itemIcon tag:0];
-        item.toolTip = tooltip;
-        item.keyEquivalent = [NSString stringWithFormat:@"%lu", i + 1];
-        item.keyEquivalentModifierMask = NSCommandKeyMask;
-        
-        [items addObject:item];
-    }
-    
-    // Load them
-    assert(_tabBar);
-    _tabBar.tabBarItems = items;
-    
-    /*
-     _tabBar.gradientColorEnd = [NSColor manuscriptsPaletteSectionHeaderGradientEndColor];
-     _tabBar.gradientColorStart = [NSColor manuscriptsPaletteSectionHeaderGradientStartColor];
-     _tabBar.borderColor = [NSColor manuscriptsDividerColor];
-     */
-    _tabBar.gradientColorEnd = nil;
-    _tabBar.gradientColorStart = nil;
-    _tabBar.borderColor = nil;
-    
-    [_tabBar handleTabBarItemSelection:^(DMTabBarItemSelectionType selectionType,
-                                         DMTabBarItem *targetTabBarItem,
-                                         NSUInteger targetTabBarItemIndex)
-     {
-         if (selectionType == DMTabBarItemSelectionType_WillSelect)
-         {
-             assert(_tabView);
-             [_tabView selectTabViewItem:[_tabView.tabViewItems objectAtIndex:targetTabBarItemIndex]];
-         }
-         else if (selectionType == DMTabBarItemSelectionType_DidSelect)
-         {
-             for (NSUInteger i = 0; i < _tabView.tabViewItems.count; i++)
-             {
-                 NSTabViewItem *item = [_tabView tabViewItemAtIndex:i];
-                 NSArray *subviews = [item.view subviews];
-                 if (subviews.count > 0)
-                 {
-                     NSScrollView *sv = subviews[0];
-                     assert([sv isKindOfClass:NSScrollView.class]);
-                     sv.hidden = (i != targetTabBarItemIndex);
-                 }
-             }
-         }
-     }];
 }
 
 #pragma mark - Palette container setup
