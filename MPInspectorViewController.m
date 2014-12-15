@@ -48,6 +48,8 @@
     assert(paletteConfigURL);
     
     NSDictionary *dict = [[[NSData alloc] initWithContentsOfURL:paletteConfigURL] objectFromJSONData];
+    NSParameterAssert(dict);
+    
     self.palettesByEntityType = dict[@"palettes"];
     self.palettesBySelectionType = dict[@"selectionType"];
     
