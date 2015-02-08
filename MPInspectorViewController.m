@@ -70,6 +70,7 @@
 - (void)setSelectionType:(NSString *)selectionType
 {
     _selectionType = selectionType;
+    [self.view.window invalidateRestorableState];
     [self setUpPaletteSectionsForSelectionType:selectionType];
 }
 
@@ -135,16 +136,16 @@
     [paletteContainer registerNib:[[NSNib alloc] initWithNibNamed:@"MPInspectorPaletteHeaderRowView" bundle:nil]
                     forIdentifier:@"MPInspectorPaletteHeaderRowView"];
     
-    scrollView.hidden = YES;
-    [[[_tabView tabViewItemAtIndex:viewIndex] view] addSubviewConstrainedToSuperViewEdges:scrollView
-                                                                                topOffset:0 rightOffset:0 bottomOffset:0 leftOffset:0];
+    scrollView.hidden = NO;
+    [[_tabView tabViewItemAtIndex:viewIndex].view addSubviewConstrainedToSuperViewEdges:scrollView
+                                                                              topOffset:0 rightOffset:0
+                                                                           bottomOffset:0 leftOffset:0];
     
-    assert(paletteContainer);
+    NSParameterAssert(paletteContainer);
     return paletteContainer;
 }
 
-- (NSString *)controllerKeyForPaletteNibName:(NSString *)nibName
-{
+- (NSString *)controllerKeyForPaletteNibName:(NSString *)nibName {
     // MPFoobarPaletteController => foobarPaletteController
     NSString *prefixlessControllerName = [nibName stringByReplacingOccurrencesOfRegex:@"^MP" withString:@""];
     NSMutableString *str = [NSMutableString stringWithString:prefixlessControllerName];
@@ -161,30 +162,33 @@
     return [str copy];
 }
 
-- (void)setPaletteContainerWithKey:(NSString *)key
-{
+- (NSOutlineView *)ensurePaletteContainerWithKeyExists:(NSString *)key {
     NSString *title = [key stringByReplacingOccurrencesOfRegex:@"PaletteContainer$" withString:@""];
     NSArray *tabs = self.palettesBySelectionType[self.selectionType]; assert(tabs);
     __block NSDictionary *configurationForKey = nil;
     __block NSUInteger tabIndex = NSNotFound;
     [tabs enumerateObjectsUsingBlock:^(NSDictionary *tabConfiguration, NSUInteger idx, BOOL *stop) {
-        if ([tabConfiguration[@"title"] isEqualToString:title])
-        {
+        if ([tabConfiguration[@"title"] isEqualToString:title]) {
             tabIndex = idx;
             configurationForKey = tabConfiguration;
             *stop = YES;
         }
     }];
-    assert(tabIndex != NSNotFound && configurationForKey);
+    NSParameterAssert(tabIndex != NSNotFound && configurationForKey);
     
-    NSOutlineView *outlineView = [self newPaletteContainerForTabViewIndex:tabIndex identifier:key];
-    [self setValue:outlineView forKey:key];
+    if (![self valueForKey:key]) {
+        NSOutlineView *outlineView = [self newPaletteContainerForTabViewIndex:tabIndex identifier:key];
+        [self setValue:outlineView forKey:key];
+        
+        return outlineView;
+    }
+    
+    return [self valueForKey:key];
 }
 
 - (JKConfigurationGroup *)configurationGroupForPaletteContainerKey:(NSString *)paletteContainerKey
                                                     paletteNibName:(NSString *)paletteNibName
-                                                             modes:(NSDictionary *)dictionary
-{
+                                                             modes:(NSDictionary *)dictionary {
     NSString *controllerKey = [self controllerKeyForPaletteNibName:paletteNibName];
     MPPaletteViewController *vc = [self valueForKey:controllerKey];
     assert(vc && [vc isKindOfClass:[MPPaletteViewController class]]);
@@ -224,7 +228,7 @@
         
         NSString *paletteContainerKey = [title stringByAppendingFormat:@"PaletteContainer"];
         
-        [self setPaletteContainerWithKey:paletteContainerKey];
+        [self ensurePaletteContainerWithKeyExists:paletteContainerKey];
         
         NSMutableArray *groups = [NSMutableArray arrayWithCapacity:paletteNames.count];
         
@@ -262,15 +266,13 @@
 #pragma mark - Outline view configuration
 
 - (BOOL) outlineView:(NSOutlineView *)outlineView
-         isGroupItem:(id)item
-{
+         isGroupItem:(id)item {
     return [item isKindOfClass:[JKConfigurationGroup class]];
 }
 
 
 - (NSView *)outlineView:(NSOutlineView *)outlineView
-     viewForTableColumn:(NSTableColumn *)tableColumn item:(id)item
-{
+     viewForTableColumn:(NSTableColumn *)tableColumn item:(id)item {
     //
     // Palette header cell views
     //

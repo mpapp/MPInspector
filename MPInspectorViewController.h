@@ -26,7 +26,7 @@
 - (CGFloat)heightForPaletteViewController:(MPPaletteViewController *)paletteViewController;
 - (void)noteHeightOfPaletteViewControllerChanged:(MPPaletteViewController *)paletteViewController;
 
-- (void)setPaletteContainerWithKey:(NSString *)key;
+- (NSOutlineView *)ensurePaletteContainerWithKeyExists:(NSString *)key;
 
 - (void)configurePaletteViewController:(MPPaletteViewController *)vc;
 
