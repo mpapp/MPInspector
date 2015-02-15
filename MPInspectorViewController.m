@@ -60,6 +60,16 @@
     assert(_palettesBySelectionType);
     
     assert(_backgroundView);
+    
+    [NSNotificationCenter.defaultCenter addObserver:self
+                                           selector:@selector(preferredScrollerStyleDidChange:)
+                                               name:NSPreferredScrollerStyleDidChangeNotification
+                                             object:nil];
+    
+}
+
+- (void)dealloc {
+    [NSNotificationCenter.defaultCenter removeObserver:self];
 }
 
 - (NSString *)selectionType
@@ -137,12 +147,51 @@
                     forIdentifier:@"MPInspectorPaletteHeaderRowView"];
     
     scrollView.hidden = NO;
-    [[_tabView tabViewItemAtIndex:viewIndex].view addSubviewConstrainedToSuperViewEdges:scrollView
-                                                                              topOffset:0 rightOffset:0
-                                                                           bottomOffset:0 leftOffset:0];
+    
+    NSView *tabItemView = [_tabView tabViewItemAtIndex:viewIndex].view;
+    [tabItemView addSubviewConstrainedToSuperViewEdges:scrollView
+                                             topOffset:0 rightOffset:0
+                                          bottomOffset:0 leftOffset:0];
+    [tabItemView layoutSubtreeIfNeeded];
+    [self adjustColumnWidthsForPaletteContainer:paletteContainer];
     
     NSParameterAssert(paletteContainer);
     return paletteContainer;
+}
+
+- (void)preferredScrollerStyleDidChange:(NSNotification *)notification {
+    for (NSString *key in [self.palettesForTabTitle allKeys])
+    {
+        NSOutlineView *paletteContainer = [self valueForKey:key];
+        if (paletteContainer) {
+            [self adjustColumnWidthsForPaletteContainer:paletteContainer];
+        }
+    }
+    
+    for (NSView *tabItemView in [[self.tabView tabViewItems] valueForKey:@"view"]) {
+        [tabItemView setNeedsLayout:YES];
+        [tabItemView setNeedsDisplay:YES];
+    }
+    
+    [self.view setNeedsLayout:YES];
+    [self.view setNeedsDisplay:YES];
+}
+
+/** Adjusts the column width and returns the scroller width that it was adjusted by. */
+- (CGFloat)adjustColumnWidthsForPaletteContainer:(NSOutlineView *)paletteContainer {
+    CGFloat preferredScrollerWidth = [NSScroller scrollerWidthForControlSize:NSRegularControlSize
+                                                               scrollerStyle:NSScroller.preferredScrollerStyle];
+    
+    NSTableColumn *column = paletteContainer.tableColumns[0];
+    
+    //if (NSScroller.preferredScrollerStyle == NSScrollerStyleLegacy) {
+        column.width = paletteContainer.frame.size.width - preferredScrollerWidth;
+    //}
+    //else {
+    //    column.width = paletteContainer.frame.size.width - 15.0f;
+    //}
+    
+    return preferredScrollerWidth;
 }
 
 - (NSString *)controllerKeyForPaletteNibName:(NSString *)nibName {
