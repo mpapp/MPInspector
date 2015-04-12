@@ -21,8 +21,6 @@
 
 #import "RegexKitLite.h"
 
-#import "JSONKit.h"
-
 @interface MPInspectorViewController ()
 {
     NSString *_selectionType;
@@ -47,7 +45,11 @@
     NSURL *paletteConfigURL = [[NSBundle mainBundle] URLForResource:@"palettes" withExtension:@"json"];
     assert(paletteConfigURL);
     
-    NSDictionary *dict = [[[NSData alloc] initWithContentsOfURL:paletteConfigURL] objectFromJSONData];
+    NSError *err = nil;
+    NSDictionary *dict = [NSJSONSerialization JSONObjectWithData:
+                          [[NSData alloc] initWithContentsOfURL:paletteConfigURL]
+                                    options:0 error:&err];
+    NSAssert(!err, @"Unexpected error: %@", err);
     NSParameterAssert(dict);
     
     self.palettesByEntityType = dict[@"palettes"];
