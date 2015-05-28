@@ -344,7 +344,7 @@
     //
     // Palette cell views
     //
-    assert([item isKindOfClass:[JKConfiguration class]]);
+    NSAssert([item isKindOfClass:[JKConfiguration class]], @"Unexpected item: %@ (%@)", item, [item class]);
 	
 	JKConfiguration *config = item;
     assert(config.nibName);
