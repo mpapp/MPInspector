@@ -17,9 +17,10 @@
 #import "JKConfigurationGroup.h"
 #import "JKConfiguration.h"
 
-#import "NSView+MPExtensions.h"
-
 #import "RegexKitLite.h"
+
+#import <FeatherExtensions/FeatherExtensions.h>
+#import <MPFoundation/MPFoundation.h>
 
 @interface MPInspectorViewController ()
 {
