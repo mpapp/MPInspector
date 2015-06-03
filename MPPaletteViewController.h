@@ -8,7 +8,9 @@
 
 #import "PARViewController.h"
 
+
 @class MPInspectorViewController, JKConfiguration;
+
 
 @interface MPPaletteViewController : PARViewController
 
@@ -30,5 +32,12 @@
 - (void)setConfigurationMode:(NSString *)configurationMode animated:(BOOL)animated;
 
 - (IBAction)getInfo:(id)sender;
+
+@end
+
+
+@protocol MPInspectorPaletteSizing <NSObject>
+@optional
+- (CGFloat)fittingPaletteHeight;
 
 @end

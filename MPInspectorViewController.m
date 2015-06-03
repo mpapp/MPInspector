@@ -382,7 +382,7 @@
     // Overload in subclass.
 }
 
-- (CGFloat) outlineView:(NSOutlineView *)outlineView heightOfRowByItem:(id)item
+- (CGFloat)outlineView:(NSOutlineView *)outlineView heightOfRowByItem:(id)item
 {
 	if ([self outlineView:outlineView isGroupItem:item])
     {
@@ -390,36 +390,51 @@
 	}
 	
 	JKConfiguration *config = item;
+    
+    if (config.itemController && [config.itemController isKindOfClass:MPPaletteViewController.class])
+    {
+        CGFloat h = [self heightForPaletteViewController:config.itemController];
+        MPAssertTrue(h >= 1.0);
+        if (h >= 1.0) // Outline view throws a fit for row heights less than 1.0
+            return h;
+    }
+    
+    // If palette view controller hasn't yet been set up, or returned a weird value above, use static height value from configuration
 	if (config.nibName)
     {
         CGFloat h = [config.modes[config.mode][@"height"] floatValue];
-        
-        NSLog(@"%@ %@:%@ = %f", config.nibName, config.mode, config.modes[config.mode], h);
-        
-        assert(h > 0);
-        return h;
+        MPAssertTrue(h >= 1.0);
+        if (h >= 1.0) // Outline view throws a fit for row heights less than 1.0
+            return h;
 	}
 	
-	return 20.0f;
+	return 28.0f;
 }
 
 - (CGFloat)heightForPaletteViewController:(MPPaletteViewController *)paletteViewController
 {
+    if ([paletteViewController respondsToSelector:@selector(fittingPaletteHeight)])
+    {
+        CGFloat h = [(id)paletteViewController fittingPaletteHeight];
+        if (h >= 1.0)
+            return h;
+    }
+    
     NSNumber *h = paletteViewController.configuration.modes[paletteViewController.configuration.mode][@"height"];
-    assert(h);
-    return [h floatValue];
+    MPAssertNotNil(h);
+    return [h doubleValue];
 }
 
 - (void)noteHeightOfPaletteViewControllerChanged:(MPPaletteViewController *)paletteViewController
 {
-    assert(paletteViewController.inspectorOutlineView);
+    MPAssertNotNil(paletteViewController.inspectorOutlineView);
     NSInteger rowIndex = [paletteViewController.inspectorOutlineView rowForView:paletteViewController.view.superview];
     
-    if (rowIndex < 0) return;
+    if (rowIndex < 0)
+        return;
+    MPAssertTrue(rowIndex >= 0);
     
-    assert(rowIndex >= 0);
-    [paletteViewController.inspectorOutlineView noteHeightOfRowsWithIndexesChanged:
-     [[NSIndexSet alloc] initWithIndex:rowIndex]];
+    [paletteViewController.inspectorOutlineView noteHeightOfRowsWithIndexesChanged:[NSIndexSet indexSetWithIndex:rowIndex]];
 }
 
 - (NSTableRowView *)outlineView:(NSOutlineView *)outlineView rowViewForItem:(id)item
