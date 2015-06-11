@@ -95,14 +95,13 @@
     
     NSRect frame = NSMakeRect(0, 0, superViewSize.width, superViewSize.height);
     //JKOutlineView *paletteContainer = [[JKOutlineView alloc] initWithFrame:frame];
-    NSOutlineView *paletteContainer = [[NSOutlineView alloc] initWithFrame:frame];
+    NSOutlineView *paletteContainer = [[MPInspectorOutlineView alloc] initWithFrame:frame];
     paletteContainer.autoresizesSubviews = YES;
     //paletteContainer.autosaveTableColumns = NO;
     //paletteContainer.autoresizingMask = (NSViewWidthSizable | NSViewHeightSizable);
     paletteContainer.headerView = nil;
     paletteContainer.floatsGroupRows = NO;
     
-    [paletteContainer setTranslatesAutoresizingMaskIntoConstraints:NO];
     [paletteContainer setIndentationMarkerFollowsCell:NO];
     [paletteContainer setIndentationPerLevel:0];
     [paletteContainer setBackgroundColor:[NSColor colorWithCalibratedWhite:1.0 alpha:0.0]];
@@ -153,7 +152,7 @@
     
     NSView *tabItemView = [_tabView tabViewItemAtIndex:viewIndex].view;
     [tabItemView addSubviewConstrainedToSuperViewEdges:scrollView
-                                             topOffset:0 rightOffset:0
+                                             topOffset:-2 rightOffset:0
                                           bottomOffset:0 leftOffset:0];
     [tabItemView layoutSubtreeIfNeeded];
     [self adjustColumnWidthsForPaletteContainer:paletteContainer];
@@ -336,8 +335,8 @@
         headerView.textField.stringValue = [item title];
         
         // inverted
-        headerView.headerGradientStartColor = [NSColor manuscriptsPaletteSectionHeaderGradientStartColor];
-        headerView.headerGradientEndColor = [NSColor manuscriptsPaletteSectionHeaderGradientEndColor];
+        //headerView.headerGradientStartColor = [NSColor manuscriptsPaletteSectionHeaderGradientStartColor];
+        //headerView.headerGradientEndColor = [NSColor manuscriptsPaletteSectionHeaderGradientEndColor];
         
         return headerView;
 	}
@@ -386,7 +385,7 @@
 {
 	if ([self outlineView:outlineView isGroupItem:item])
     {
-		return 15.f;
+		return 25.f;
 	}
 	
 	JKConfiguration *config = item;
@@ -501,6 +500,21 @@
 - (BOOL)outlineView:(NSOutlineView *)outlineView isItemExpandable:(id)item
 {
     return YES; //return [self outlineView:outlineView isGroupItem:item];
+}
+
+@end
+
+#pragma mark -
+
+@implementation MPInspectorOutlineView
+
+// comment this out to make the outline view behave as if convertAutoresizeMasktoConstrints is not on.
+//- (void)resizeWithOldSuperviewSize:(NSSize)oldSize {
+    // nop..
+//}
+
+- (void)setFrameSize:(NSSize)newSize {
+    [super setFrameSize:newSize];
 }
 
 @end

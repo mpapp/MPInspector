@@ -31,3 +31,8 @@
 - (void)configurePaletteViewController:(MPPaletteViewController *)vc;
 
 @end
+
+#pragma mark - 
+
+@interface MPInspectorOutlineView : NSOutlineView
+@end
