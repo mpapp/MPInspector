@@ -21,6 +21,7 @@
 
 #import <FeatherExtensions/FeatherExtensions.h>
 #import <MPFoundation/MPFoundation.h>
+#import <P2Core/NSView+P2Extensions.h>
 
 @interface MPInspectorViewController ()
 {
@@ -93,7 +94,7 @@
 {
     NSSize superViewSize = self.view.frame.size;
     
-    NSRect frame = NSMakeRect(0, 0, superViewSize.width, superViewSize.height);
+    NSRect frame = NSMakeRect(0, -1, superViewSize.width, superViewSize.height);
     //JKOutlineView *paletteContainer = [[JKOutlineView alloc] initWithFrame:frame];
     NSOutlineView *paletteContainer = [[MPInspectorOutlineView alloc] initWithFrame:frame];
     paletteContainer.autoresizesSubviews = YES;
@@ -118,8 +119,12 @@
     [column setEditable: NO];
     column.resizingMask = NSTableColumnAutoresizingMask;
     column.editable = NO;
-    column.width = 320.0;
+    
+    column.width = self.view.frame.size.width;
+    
     [paletteContainer addTableColumn: column];
+    [paletteContainer sizeLastColumnToFit];
+    
     //paletteContainer.wantsLayer = YES;
     
     NSScrollView *scrollView = [[NSScrollView alloc] initWithFrame:CGRectZero];
@@ -152,8 +157,11 @@
     
     NSView *tabItemView = [_tabView tabViewItemAtIndex:viewIndex].view;
     [tabItemView addSubviewConstrainedToSuperViewEdges:scrollView
-                                             topOffset:-2 rightOffset:0
-                                          bottomOffset:0 leftOffset:0];
+                                             topOffset:-10
+                                           rightOffset:1
+                                          bottomOffset:0
+                                            leftOffset:-1];
+
     [tabItemView layoutSubtreeIfNeeded];
     [self adjustColumnWidthsForPaletteContainer:paletteContainer];
     
@@ -502,6 +510,14 @@
     return YES; //return [self outlineView:outlineView isGroupItem:item];
 }
 
+- (void)outlineView:(NSOutlineView *)outlineView
+      didAddRowView:(NSTableRowView *)rowView
+             forRow:(NSInteger)row {
+    if ([rowView isKindOfClass:[JKConfigurationHeaderRowView class]]) {
+        ((JKConfigurationHeaderRowView *)rowView).tableView = outlineView;
+    }
+}
+
 @end
 
 #pragma mark -
@@ -512,6 +528,18 @@
 //- (void)resizeWithOldSuperviewSize:(NSSize)oldSize {
     // nop..
 //}
+
+- (void)endUpdates {
+    [super endUpdates];
+    
+    for (NSUInteger i = 0; i < self.numberOfRows; i++) {
+        NSTableRowView *rowView = [self rowViewAtRow:i makeIfNecessary:NO];
+        
+        if ([rowView isKindOfClass:[JKConfigurationHeaderRowView class]]) {
+            ((JKConfigurationHeaderRowView *)rowView).tableView = self;
+        }
+    }
+}
 
 - (void)setFrameSize:(NSSize)newSize {
     [super setFrameSize:newSize];
