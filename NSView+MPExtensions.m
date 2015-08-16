@@ -78,7 +78,7 @@ typedef NS_ENUM(NSUInteger, MPViewDimension)
                                  bottomOffset:(CGFloat)bottomOffset
                                    leftOffset:(CGFloat)leftOffset
 {
-    assert(aView);
+    NSAssert(aView, @"Subview is nil when attempting to add subview constrained to superview %@", self);
     
     [aView setTranslatesAutoresizingMaskIntoConstraints:NO];
     
