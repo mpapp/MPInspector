@@ -47,7 +47,7 @@ typedef NS_ENUM(NSUInteger, MPViewDimension)
 };
 
 
-@implementation NSView (MPExtensions)
+@implementation NSView (MPViewExtensions)
 
 // From
 // http://stackoverflow.com/questions/8156799/how-to-make-a-custom-view-resize-with-the-window-with-cocoa-auto-layout

@@ -16,7 +16,7 @@ extern inline NSInteger MPBooleanToState(BOOL b);
 extern inline BOOL MPStateToBoolean(NSInteger state);
 
 
-@interface NSView (MPExtensions)
+@interface NSView (MPViewExtensions)
 
 - (void)addEdgeConstraint:(NSLayoutAttribute)edge subview:(NSView *)subview;
 - (void)addEdgeConstraint:(NSLayoutAttribute)edge constantOffset:(CGFloat)value subview:(NSView *)subview;
