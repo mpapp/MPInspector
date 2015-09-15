@@ -276,7 +276,7 @@
 
 - (void)setUpPaletteSectionsForSelectionType:(NSString *)selectionType
 {
-    NSArray *tabs = self.palettesBySelectionType[selectionType]; assert(tabs);
+    NSArray *tabs = self.palettesBySelectionType[selectionType]; NSParameterAssert(tabs);
     NSMutableDictionary *palettesForTabs = [NSMutableDictionary dictionaryWithCapacity:tabs.count];
     
     for (NSUInteger i = 0; i < tabs.count; i++)
