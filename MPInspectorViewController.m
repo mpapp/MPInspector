@@ -276,7 +276,14 @@
 
 - (void)setUpPaletteSectionsForSelectionType:(NSString *)selectionType
 {
-    NSArray *tabs = self.palettesBySelectionType[selectionType]; assert(tabs);
+    NSArray *tabs = self.palettesBySelectionType[selectionType];
+    
+    if (!tabs) {
+        NSBeep();
+        MPLogError(@"No palettes for selection type %@. Please contact support if you are seeing this.", selectionType);
+        return;
+    }
+    
     NSMutableDictionary *palettesForTabs = [NSMutableDictionary dictionaryWithCapacity:tabs.count];
     
     for (NSUInteger i = 0; i < tabs.count; i++)
