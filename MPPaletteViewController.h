@@ -6,13 +6,11 @@
 //  Copyright (c) 2012 Manuscripts.app Limited. All rights reserved.
 //
 
-#import "PARViewController.h"
-
+#import <Cocoa/Cocoa.h>
 
 @class MPInspectorViewController, JKConfiguration;
 
-
-@interface MPPaletteViewController : PARViewController
+@interface MPPaletteViewController : NSViewController
 
 @property (weak) IBOutlet NSButton *infoButton;
 
