@@ -250,9 +250,9 @@
                                                              modes:(NSDictionary *)dictionary {
     NSString *controllerKey = [self controllerKeyForPaletteNibName:paletteNibName];
     MPPaletteViewController *vc = [self valueForKey:controllerKey];
-    assert(vc && [vc isKindOfClass:[MPPaletteViewController class]]);
+    NSAssert(vc && [vc isKindOfClass:[MPPaletteViewController class]], @"Unexpected palette view controller of type %@", vc.class);
     
-    assert(vc.title);
+    NSAssert(vc.title, @"Missing title property for view controller %@ (%@)", vc, vc.class);
     
     JKConfigurationGroup *group = [JKConfigurationGroup configurationWithTitle:vc.title];
     
@@ -302,15 +302,16 @@
         {
             NSDictionary *palette = self.palettesByEntityType[paletteName];
             
-            NSString *paletteName = palette[@"title"]; assert(paletteName);
+            NSString *paletteName = palette[@"title"];
+            NSAssert(paletteName, @"Missing 'title' key in palette configuration: %@", palette);
             
-            assert(palette[@"modes"]);
+            NSAssert(palette[@"modes"], @"Missing 'modes' key in palette configuration: %@", palette);
             
             NSString *paletteNibName = [paletteName stringByAppendingFormat:@"PaletteController"];
             
             JKConfigurationGroup *configGroup
-            = [self configurationGroupForPaletteContainerKey:paletteContainerKey
-                                              paletteNibName:paletteNibName modes:palette[@"modes"]];
+                = [self configurationGroupForPaletteContainerKey:paletteContainerKey
+                                                  paletteNibName:paletteNibName modes:palette[@"modes"]];
             
             [groups addObject:configGroup];
         }
@@ -367,8 +368,8 @@
     assert([outlineView registeredNibsByIdentifier][config.nibName]);
     
     MPPaletteViewController *vc = [self valueForKey:[self controllerKeyForPaletteNibName:config.nibName]];
-    assert(vc); // matching Nib & view controller name
-    assert(vc.inspectorController == self);
+    NSAssert(vc, @"Failed to find view controller with palette Nib name %@", config.nibName); // matching Nib & view controller name
+    NSAssert(vc.inspectorController == self, @"Unexpected inspector controller: %@ != %@", vc.inspectorController, self);
     
     // MUST set before packageController.
     vc.inspectorOutlineView = outlineView;
