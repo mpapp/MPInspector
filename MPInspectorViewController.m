@@ -19,8 +19,8 @@
 
 #import "RegexKitLite.h"
 
-#import <FeatherExtensions/FeatherExtensions.h>
-#import <MPFoundation/MPFoundation.h>
+@import FeatherExtensions;
+@import MPFoundation;
 #import <P2Core/NSView+P2Extensions.h>
 
 @interface MPInspectorViewController ()
@@ -387,7 +387,7 @@
 	NSTableCellView *view = (NSTableCellView *)vc.view;
     //view.wantsLayer = YES;
     
-    assert ([view isKindOfClass:[NSTableCellView class]] && [view class] != [NSTableCellView class]);
+    NSAssert([view isKindOfClass:[NSTableCellView class]] && [view class] != [NSTableCellView class], @"View %@ is of unexpected class %@ (expecting an NSTableCellView subclass)", view, view.class);
     
     return view;
 }
