@@ -8,14 +8,12 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "PARViewController.h"
-
 @class DMTabBar; //, JKOutlineView;
 @class MPPaletteViewController;
 @class MPManuscriptsPackageController;
 
 /** A view controller for the Manuscripts.app main window's inspector. */
-@interface MPInspectorViewController : PARViewController <NSOutlineViewDataSource, NSOutlineViewDelegate>
+@interface MPInspectorViewController : NSViewController <NSOutlineViewDataSource, NSOutlineViewDelegate>
 
 @property (weak) IBOutlet NSView *backgroundView;
 @property (weak) IBOutlet NSTabView *tabView;
