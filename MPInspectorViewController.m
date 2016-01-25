@@ -81,6 +81,18 @@
 
 - (void)setSelectionType:(NSString *)selectionType
 {
+    if ([_selectionType isEqualToString:selectionType]) {
+        return;
+    }
+    
+    if (_selectionType && selectionType) {
+        NSArray *currentTabs = [self.palettesBySelectionType[_selectionType] valueForKey:@"palettes"];
+        NSArray *newTabs = [self.palettesBySelectionType[selectionType] valueForKey:@"palettes"];
+        if ([currentTabs isEqual:newTabs]) {
+            return;
+        }
+    }
+    
     _selectionType = selectionType;
     [self.view.window invalidateRestorableState];
     [self setUpPaletteSectionsForSelectionType:selectionType];
@@ -318,7 +330,7 @@
     }
     self.palettesForTabTitle = palettesForTabs;
     
-    for (NSString *key in [self.palettesForTabTitle allKeys])
+    for (NSString *key in self.palettesForTabTitle.allKeys)
     {
         NSOutlineView *paletteContainer = [self valueForKey:key];
         paletteContainer.delegate = self;
