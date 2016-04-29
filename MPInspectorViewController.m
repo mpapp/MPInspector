@@ -20,6 +20,7 @@
 @import FeatherAppKitExtensions.NSView_MPExtensions;
 @import RegexKitLite;
 @import FeatherExtensions;
+@import FeatherAppKitExtensions.NSView_MPExtensions;
 @import P2Core;
 
 @interface MPInspectorViewController ()
