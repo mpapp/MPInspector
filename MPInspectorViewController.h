@@ -34,3 +34,6 @@
 
 @interface MPInspectorOutlineView : NSOutlineView
 @end
+
+@interface MPInspectorContainerView : NSView
+@end

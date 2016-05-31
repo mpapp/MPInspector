@@ -565,3 +565,12 @@
 }
 
 @end
+
+
+@implementation MPInspectorContainerView
+
+- (void)setFrame:(NSRect)frame {
+    [super setFrame:frame];
+}
+
+@end
