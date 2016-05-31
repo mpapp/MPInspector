@@ -17,6 +17,7 @@
 #import "JKConfigurationGroup.h"
 #import "JKConfiguration.h"
 
+@import FeatherAppKitExtensions.NSView_MPExtensions;
 @import RegexKitLite;
 @import FeatherExtensions;
 @import FeatherAppKitExtensions.NSView_MPExtensions;
